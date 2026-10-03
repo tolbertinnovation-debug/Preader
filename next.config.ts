@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
-  serverExternalPackages: ["pg", "mammoth", "unpdf", "docx"],
+  serverExternalPackages: ["pg", "mammoth", "unpdf", "docx", "nodemailer"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

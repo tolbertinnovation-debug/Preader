@@ -19,7 +19,7 @@ export const POST = route(async (req) => {
     [body.email],
   );
   if (user?.locked_until && user.locked_until > new Date()) {
-    throw new HttpError(423, "locked", "This account is temporarily locked after repeated failed sign-ins. Try again in 15 minutes.");
+    throw new HttpError(423, "locked", "This account is temporarily locked after repeated failed sign-ins. Try again in 15 minutes, or reset your password.");
   }
   const ok = await verifyPassword(body.password, user?.password_hash);
   if (!user || !ok) {

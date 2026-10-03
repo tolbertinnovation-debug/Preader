@@ -15,7 +15,7 @@ Preader edits; it does not ghost-write. It never adds facts, statistics, quotati
 - **Uploads**: `.docx`, `.pdf` (hard-wrapped lines are rejoined), `.txt` and `.md`. Drag and drop works too.
 - **Export**: copy to clipboard, or download `.docx`, `.md` or `.txt`. You can also download a **revision report** (`.docx`) that lists every paragraph with its flags, which suits supervisors and AI-use disclosure.
 - **History**: your rewrites are encrypted and saved, and you can search, reopen and delete them. Your choices to keep, revert or edit are saved as you go.
-- **Accounts**: sign up and sign in, change your password (which signs out your other devices), download all your data, and delete your account.
+- **Accounts**: sign up and sign in, reset a forgotten password by email, change your password (which signs out your other devices), download all your data, and delete your account.
 - **Mobile-first, responsive UI** with light and dark themes, keyboard support (`Ctrl/⌘ + Enter` rewrites), and reduced-motion support.
 
 ## How meaning is protected
@@ -64,6 +64,7 @@ Next.js 16 (App Router, React 19, Tailwind v4)
 - Document titles, originals, results and voice samples are **encrypted at rest** with AES-256-GCM.
 - Sessions use a random 256-bit token in an `httpOnly`, `SameSite=Lax` cookie (`Secure` and `__Host-` in production). Only its SHA-256 hash is stored. Sessions slide for 30 days.
 - Passwords are hashed with bcrypt (cost 12). A sign-in for an unknown account takes the same time as one for a real account. After 8 failures the account locks for 15 minutes, and sign-in attempts are rate-limited per IP and per email.
+- **Password reset** links are single-use, expire after 30 minutes, and are stored only as SHA-256 hashes. Requesting a new link revokes older ones. The request endpoint always gives the same answer, and it does the lookup and sending after the response, so neither its wording nor its timing reveals whether an account exists. It is rate-limited per IP and per email. Links are built from `APP_URL`, never from the request's Host header. A successful reset unlocks the account, signs out every session and emails a "password changed" notice.
 - Every state-changing request needs a same-origin `Origin` or `Referer` header (CSRF defence). Every input is validated with zod, and request sizes are capped.
 - A nonce-based **Content Security Policy** is set, along with HSTS, `X-Frame-Options: DENY`, `nosniff`, a referrer policy and a permissions policy.
 - **Rate limits:** rewrites per minute per user, plus a daily word quota. Usage is charged up front so parallel requests can't overshoot the quota, and it is refunded if a run fails. Uploads, exports and account actions have their own limits.
@@ -107,7 +108,10 @@ docker compose up --build
 | `DAILY_WORD_LIMIT` | `50000` | Words per user per rolling 24 hours |
 | `REWRITES_PER_MINUTE` | `8` | Rewrite requests per user per minute |
 | `ALLOW_SIGNUPS` | `true` | Close public registration |
-| `APP_URL` | request host | Public origin, used for CSRF checks |
+| `EMAIL_FROM` | `Preader <no-reply@localhost>` | Sender for password-reset email |
+| `RESEND_API_KEY` | — | Send email through Resend |
+| `SMTP_URL` | — | Or send through SMTP (`smtps://user:pass@host:465`) |
+| `APP_URL` | request host | Public origin, used for CSRF checks and email links. **Required in production for password reset.** |
 | `DATABASE_SSL` | `false` | Enable TLS to the database |
 
 ## Scripts
