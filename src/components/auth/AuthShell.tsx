@@ -1,4 +1,5 @@
 import { Logo } from "@/components/logo";
+import { PoweredBy } from "@/components/powered-by";
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,9 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <p className="mt-6 text-center text-xs leading-relaxed text-muted">
             Your writing is encrypted at rest and never used to train AI models.
           </p>
+          <div className="mt-3 flex justify-center">
+            <PoweredBy />
+          </div>
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ function layout(title: string, bodyHtml: string): string {
 <tr><td style="padding:28px 28px 8px;font-family:Georgia,serif;font-size:22px;font-weight:600;color:#14532d">Preader</td></tr>
 <tr><td style="padding:8px 28px 28px;font-size:15px;line-height:1.6">${bodyHtml}</td></tr>
 </table>
-<p style="font-size:12px;color:#7a7266;margin-top:16px">Preader · Pan-African humanized writing</p>
+<p style="font-size:12px;color:#7a7266;margin-top:16px">Preader · Powered by Tolbert Innovation Hub</p>
 </td></tr></table></body></html>`;
 }
 
@@ -32,7 +32,7 @@ ${opts.link}
 
 If you didn't ask for this, you can ignore this email — your password won't change.
 
-— Preader`;
+— Preader, powered by Tolbert Innovation Hub`;
   const html = layout(
     subject,
     `<p style="margin:0 0 16px">Hello ${escapeHtml(opts.name)},</p>
@@ -54,7 +54,7 @@ The password for your Preader account was changed on ${when}. You've been signed
 
 If this wasn't you, reset your password straight away: ${opts.resetUrl}
 
-— Preader`;
+— Preader, powered by Tolbert Innovation Hub`;
   const html = layout(
     subject,
     `<p style="margin:0 0 16px">Hello ${escapeHtml(opts.name)},</p>
