@@ -49,5 +49,5 @@ export function downloadBlob(blob: Blob, name: string) {
 }
 
 export function slug(title: string) {
-  return title.replace(/[^\p{L}\p{N} _-]+/gu, "").trim().replace(/\s+/g, "-").slice(0, 60) || "preader";
+  return title.replace(/[^\p{L}\p{N} _-]+/gu, "").trim().replace(/\s+/g, "-").slice(0, 60) || "panpen";
 }

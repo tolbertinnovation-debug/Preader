@@ -23,6 +23,7 @@
   --color-clay: #b4471f;
   --color-clay-soft: #fbe6dc;
   --color-indigo: #2e2a6b;
+  --color-navy: #0b1f45;
 
   --color-risk-low: #a16207;
   --color-risk-low-bg: #fef6dc;
@@ -56,6 +57,7 @@
     --color-clay: #f08a5d;
     --color-clay-soft: #2e1a12;
     --color-indigo: #a5a1f0;
+    --color-navy: #f3eee6;
     --color-risk-low: #facc15;
     --color-risk-low-bg: #2b240c;
     --color-risk-medium: #fb923c;

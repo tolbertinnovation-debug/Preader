@@ -8,10 +8,10 @@ const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter",
 const fraunces = Fraunces({ subsets: ["latin", "latin-ext"], variable: "--font-fraunces", display: "swap", axes: ["opsz"] });
 
 export const metadata: Metadata = {
-  title: { default: "Preader — Pan-African humanized writing", template: "%s · Preader" },
+  title: { default: "PanPen — Pan-African humanized writing", template: "%s · PanPen" },
   description:
     "Turn rough or AI-assisted drafts into natural, culturally aware prose that keeps your meaning, facts, citations and voice. Built for African students, researchers and professionals.",
-  applicationName: "Preader",
+  applicationName: "PanPen",
   authors: [{ name: "Tolbert Innovation Hub" }],
   creator: "Tolbert Innovation Hub",
   publisher: "Tolbert Innovation Hub",

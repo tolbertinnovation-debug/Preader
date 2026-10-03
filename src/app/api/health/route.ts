@@ -8,7 +8,7 @@ import { json } from "@/lib/http";
 type Status = "ok" | "missing" | "invalid" | "unreachable" | "not set up";
 
 /**
- * Setup checklist for whoever deploys Preader. Reports only whether each piece is
+ * Setup checklist for whoever deploys PanPen. Reports only whether each piece is
  * configured — never any value, secret or error detail.
  */
 export async function GET() {

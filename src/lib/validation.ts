@@ -74,7 +74,7 @@ export const passwordChangeSchema = z.object({
 
 export const exportSchema = z.object({
   format: z.enum(["docx", "report"]),
-  title: z.string().max(200).default("Preader document"),
+  title: z.string().max(200).default("PanPen document"),
   text: z.string().max(LIMITS.maxChars * 2),
   segments: z
     .array(

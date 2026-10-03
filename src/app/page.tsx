@@ -40,7 +40,7 @@ const FEATURES = [
   {
     icon: Feather,
     title: "Sounds like you",
-    body: "Preader preserves your vocabulary and stance, and can learn your rhythm from a sample of your own writing, so the result reads as your best work rather than a stranger's.",
+    body: "PanPen preserves your vocabulary and stance, and can learn your rhythm from a sample of your own writing, so the result reads as your best work rather than a stranger's.",
   },
   {
     icon: Lock,
@@ -94,7 +94,7 @@ export default async function Home() {
               Written naturally.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Preader turns rough or AI-assisted drafts into clear, natural, culturally aware prose — while keeping your meaning,
+              PanPen turns rough or AI-assisted drafts into clear, natural, culturally aware prose — while keeping your meaning,
               facts, citations and voice exactly where they belong. Made for African students, researchers, academics, professionals and creators.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -182,7 +182,7 @@ export default async function Home() {
               <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Seven modes. Ten Englishes. One voice — yours.</h2>
               <p className="mt-4 text-ink-soft">
                 Pick the purpose, the variety of English your readers expect, and how boldly to edit. Fine-tune tone, formality and readability.
-                Preader handles the rest and shows you every change.
+                PanPen handles the rest and shows you every change.
               </p>
               <ol className="mt-8 space-y-5">
                 {[
@@ -230,7 +230,7 @@ export default async function Home() {
             <h2 className="max-w-3xl font-serif text-3xl font-semibold tracking-tight">Our integrity pledge</h2>
             <div className="mt-6 grid gap-6 text-sm leading-relaxed opacity-90 md:grid-cols-3">
               <p>
-                Preader is an editor, not a ghost-writer or a disguise. It is not designed to trick AI detectors — it is designed to make
+                PanPen is an editor, not a ghost-writer or a disguise. It is not designed to trick AI detectors — it is designed to make
                 your own ideas read clearly and naturally.
               </p>
               <p>
@@ -251,7 +251,10 @@ export default async function Home() {
         </section>
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
           <div className="grid items-center gap-6 rounded-3xl border border-line bg-surface p-6 sm:p-10 md:grid-cols-[auto_1fr]">
-            <div className="kente h-16 w-16 rounded-2xl" aria-hidden />
+            <picture className="block w-56 max-w-full sm:w-64">
+              <source srcSet="/brand/panpen-logo-dark.png" media="(prefers-color-scheme: dark)" />
+              <img src="/brand/panpen-logo.png" alt="PanPen — powered by Tolbert Innovation Hub" width={1400} height={392} className="h-auto w-full" />
+            </picture>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">{ORG.poweredBy}</p>
               <p className="mt-2 max-w-3xl leading-relaxed text-ink-soft">{ORG.about}</p>

@@ -95,7 +95,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           </>
         ) : (
           <>
-            New to Preader?{" "}
+            New to PanPen?{" "}
             <Link href="/signup" className="font-medium text-forest hover:underline">
               Create an account
             </Link>

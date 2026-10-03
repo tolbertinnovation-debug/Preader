@@ -70,7 +70,7 @@ export function SettingsForms({ name, email, voiceSample }: { name: string; emai
       <Section
         icon={Feather}
         title="Your writing voice"
-        description="Paste 150–800 words you wrote yourself — an essay, report or blog post. Preader uses it only as a style reference so revisions sound like you. It's encrypted and never used to train models."
+        description="Paste 150–800 words you wrote yourself — an essay, report or blog post. PanPen uses it only as a style reference so revisions sound like you. It's encrypted and never used to train models."
       >
         <textarea
           value={sample}
@@ -141,7 +141,7 @@ export function SettingsForms({ name, email, voiceSample }: { name: string; emai
       <Section
         icon={ShieldCheck}
         title="Privacy & your data"
-        description="Documents are encrypted at rest (AES-256-GCM) and sent to OpenAI only for processing, with storage disabled. Citations, quotations, statistics and — if you choose — personal details are masked before they leave Preader."
+        description="Documents are encrypted at rest (AES-256-GCM) and sent to OpenAI only for processing, with storage disabled. Citations, quotations, statistics and — if you choose — personal details are masked before they leave PanPen."
       >
         <div className="flex flex-col gap-3 sm:flex-row">
           <a href="/api/account/export" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-sm font-medium hover:bg-sunken">

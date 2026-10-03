@@ -8,7 +8,7 @@ import { exportSchema } from "@/lib/validation";
 export const runtime = "nodejs";
 
 function filename(title: string, suffix: string) {
-  const base = title.replace(/[^\p{L}\p{N} _-]+/gu, "").trim().replace(/\s+/g, "-").slice(0, 60) || "preader";
+  const base = title.replace(/[^\p{L}\p{N} _-]+/gu, "").trim().replace(/\s+/g, "-").slice(0, 60) || "panpen";
   return `${base}${suffix}.docx`;
 }
 
