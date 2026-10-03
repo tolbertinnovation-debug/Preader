@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveAppUrl, resolveDatabaseUrl } from "./db-url";
 
 function int(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -18,7 +19,9 @@ const isProd = process.env.NODE_ENV === "production";
 export const env = {
   isProd,
   get databaseUrl() {
-    return required("DATABASE_URL");
+    const url = resolveDatabaseUrl();
+    if (!url) throw new Error("Missing database connection: set DATABASE_URL");
+    return url;
   },
   get openaiApiKey() {
     return process.env.OPENAI_API_KEY ?? "";
@@ -26,7 +29,7 @@ export const env = {
   get encryptionKey() {
     return required("ENCRYPTION_KEY");
   },
-  appUrl: process.env.APP_URL ?? "",
+  appUrl: resolveAppUrl(),
   model: process.env.OPENAI_MODEL || "gpt-5.5",
   reasoningEffort: (process.env.OPENAI_REASONING_EFFORT || "medium") as
     | "none"

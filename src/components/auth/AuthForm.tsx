@@ -48,7 +48,18 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" className={inputClass} placeholder="you@university.edu" />
       </div>
       <div>
-        <Label htmlFor="password" hint={mode === "signup" ? "10+ characters, letters and numbers" : undefined}>
+        <Label
+          htmlFor="password"
+          hint={
+            mode === "signup" ? (
+              "10+ characters, letters and numbers"
+            ) : (
+              <Link href="/forgot-password" className="font-medium text-forest hover:underline">
+                Forgot password?
+              </Link>
+            )
+          }
+        >
           Password
         </Label>
         <div className="relative">

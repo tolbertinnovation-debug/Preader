@@ -63,7 +63,7 @@ export function EditorPane({
 
   async function upload(file: File) {
     if (file.size > LIMITS.maxUploadBytes) {
-      toast("Files must be 5 MB or smaller.", "high");
+      toast("Files must be 4 MB or smaller.", "high");
       return;
     }
     setUploading(true);

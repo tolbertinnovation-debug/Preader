@@ -12,7 +12,7 @@ export const POST = route(async (req) => {
   const user = await requireUser();
   await rateLimit(`upload:${user.id}`, 20, 60);
   if (Number(req.headers.get("content-length") ?? 0) > LIMITS.maxUploadBytes + 64_000) {
-    throw new HttpError(413, "too_large", "Files must be 5 MB or smaller.");
+    throw new HttpError(413, "too_large", "Files must be 4 MB or smaller.");
   }
   let form: FormData;
   try {
@@ -22,7 +22,7 @@ export const POST = route(async (req) => {
   }
   const file = form.get("file");
   if (!(file instanceof File)) throw new HttpError(400, "no_file", "Choose a file to upload.");
-  if (file.size > LIMITS.maxUploadBytes) throw new HttpError(413, "too_large", "Files must be 5 MB or smaller.");
+  if (file.size > LIMITS.maxUploadBytes) throw new HttpError(413, "too_large", "Files must be 4 MB or smaller.");
   const buf = Buffer.from(await file.arrayBuffer());
   try {
     return json(await parseUpload(file.name, buf));
