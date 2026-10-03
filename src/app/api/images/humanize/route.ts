@@ -2,7 +2,7 @@ import { requireUser } from "@/lib/auth/session";
 import { sha256 } from "@/lib/crypto";
 import { env } from "@/lib/env";
 import { HttpError, assertSameOrigin } from "@/lib/http";
-import { IMAGE_FOCUS, IMAGE_LIMITS, type ImageFocus, type ImageStrength } from "@/lib/images/options";
+import { IMAGE_FOCUS, IMAGE_LIMITS, IMAGE_SUBJECTS, type ImageFocus, type ImageStrength, type ImageSubject } from "@/lib/images/options";
 import { buildImagePrompt } from "@/lib/images/prompt";
 import { humanizeImage } from "@/lib/images/provider";
 import { sniffImage } from "@/lib/images/validate";
@@ -49,6 +49,9 @@ export const POST = route(async (req) => {
   const width = intField(form, "width", IMAGE_LIMITS.minEdge / 4, 8192);
   const height = intField(form, "height", IMAGE_LIMITS.minEdge / 4, 8192);
   const strength = intField(form, "strength", 1, 3) as ImageStrength;
+  const subjectRaw = String(form.get("subject") ?? "people");
+  if (!(subjectRaw in IMAGE_SUBJECTS)) throw new HttpError(400, "invalid", "Invalid subject.");
+  const subject = subjectRaw as ImageSubject;
   const focus = String(form.get("focus") ?? "")
     .split(",")
     .filter((f): f is ImageFocus => f in IMAGE_FOCUS);
@@ -67,7 +70,7 @@ export const POST = route(async (req) => {
       kind,
       width,
       height,
-      prompt: buildImagePrompt({ strength, focus }),
+      prompt: buildImagePrompt({ subject, strength, focus }),
       safetyId: sha256(`preader:${user.id}`).slice(0, 32),
       signal: abort.signal,
     });

@@ -51,7 +51,7 @@ const FEATURES = [
   {
     icon: ImageIcon,
     title: "Image Humanizer",
-    body: "Turn AI-generated images into natural, photographic visuals — real skin texture, believable light, correct hands and eyes — while keeping every face, skin tone and African feature exactly as it is.",
+    body: "Make AI-generated images look more natural — real skin texture, believable light, correct hands and eyes — while keeping every face, skin tone, product and poster detail exactly as it is. It improves the look; it doesn't hide that AI was used.",
   },
   {
     icon: Scale,

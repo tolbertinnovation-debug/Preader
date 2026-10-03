@@ -5,7 +5,7 @@ import { sniffImage } from "@/lib/images/validate";
 
 describe("buildImagePrompt", () => {
   it("always leads with identity and skin-tone preservation", () => {
-    const p = buildImagePrompt({ strength: 2, focus: ["skin"] });
+    const p = buildImagePrompt({ subject: "people", strength: 2, focus: ["skin"] });
     expect(p.indexOf("PRESERVE")).toBeLessThan(p.indexOf("IMPROVE"));
     expect(p).toMatch(/Never lighten/);
     expect(p).toMatch(/hair texture/);
@@ -14,9 +14,28 @@ describe("buildImagePrompt", () => {
   });
 
   it("falls back to every focus area when none is selected, and reflects strength", () => {
-    const p = buildImagePrompt({ strength: 3, focus: [] });
+    const p = buildImagePrompt({ subject: "people", strength: 3, focus: [] });
     for (const k of ["Skin:", "Lighting:", "Anatomy:", "Artefacts:"]) expect(p).toContain(k);
     expect(p).toContain("STRONG");
+  });
+});
+
+describe("subject-specific preservation", () => {
+  it("keeps every word and price on posters and forbids rewriting text", () => {
+    const p = buildImagePrompt({ subject: "graphic", strength: 2, focus: ["artifacts"] });
+    expect(p).toMatch(/designed graphic/);
+    expect(p).toMatch(/Do not rewrite, correct, translate, add or remove any text/);
+    expect(p).toMatch(/phone number/);
+    expect(p).not.toMatch(/photorealistic image/);
+  });
+
+  it("protects product branding, and still protects any people in products and places", () => {
+    const product = buildImagePrompt({ subject: "product", strength: 1, focus: ["lighting"] });
+    expect(product).toMatch(/branding, labels, logos/);
+    expect(product).toMatch(/Never lighten/);
+    const scene = buildImagePrompt({ subject: "scene", strength: 1, focus: ["lighting"] });
+    expect(scene).toMatch(/architecture, landmarks/);
+    expect(scene).toMatch(/Never lighten/);
   });
 });
 
