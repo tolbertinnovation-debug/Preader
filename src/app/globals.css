@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-fraunces), "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+@theme {
+  --color-canvas: #fbf7f0;
+  --color-surface: #ffffff;
+  --color-sunken: #f4eee3;
+  --color-line: #e7dfd1;
+  --color-line-strong: #d5c9b4;
+  --color-ink: #1d1a16;
+  --color-ink-soft: #4a443b;
+  --color-muted: #7a7266;
+
+  --color-forest: #14532d;
+  --color-forest-strong: #0f3f22;
+  --color-forest-soft: #e6f0e8;
+  --color-gold: #c8901a;
+  --color-gold-soft: #fbf0d6;
+  --color-clay: #b4471f;
+  --color-clay-soft: #fbe6dc;
+  --color-indigo: #2e2a6b;
+
+  --color-risk-low: #a16207;
+  --color-risk-low-bg: #fef6dc;
+  --color-risk-medium: #c2410c;
+  --color-risk-medium-bg: #ffedd5;
+  --color-risk-high: #b91c1c;
+  --color-risk-high-bg: #fee2e2;
+
+  --color-diff-add: #d6f0dc;
+  --color-diff-del: #fbdcd4;
+
+  --shadow-card: 0 1px 2px rgb(29 26 22 / 0.04), 0 8px 24px -12px rgb(29 26 22 / 0.12);
+  --radius-xl2: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: #12110f;
+    --color-surface: #1b1a17;
+    --color-sunken: #23211d;
+    --color-line: #2f2c27;
+    --color-line-strong: #423e36;
+    --color-ink: #f3eee6;
+    --color-ink-soft: #cfc7ba;
+    --color-muted: #9b9284;
+    --color-forest: #4ade80;
+    --color-forest-strong: #86efac;
+    --color-forest-soft: #14281b;
+    --color-gold: #e8b64a;
+    --color-gold-soft: #2d2412;
+    --color-clay: #f08a5d;
+    --color-clay-soft: #2e1a12;
+    --color-indigo: #a5a1f0;
+    --color-risk-low: #facc15;
+    --color-risk-low-bg: #2b240c;
+    --color-risk-medium: #fb923c;
+    --color-risk-medium-bg: #2e1b0e;
+    --color-risk-high: #f87171;
+    --color-risk-high-bg: #311414;
+    --color-diff-add: #173a22;
+    --color-diff-del: #3d1d16;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-gold) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Kente-inspired woven band used as a quiet brand accent. */
+.kente {
+  background-image:
+    repeating-linear-gradient(90deg, var(--color-gold) 0 14px, var(--color-forest) 14px 22px, var(--color-clay) 22px 30px, var(--color-ink) 30px 34px, var(--color-gold) 34px 48px),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 0.12) 3px 4px);
+  background-blend-mode: multiply;
+}
+
+.adinkra-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--color-gold) 30%, transparent) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+}
+
+.prose-doc {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-ink);
+}
+
+.diff-add {
+  background: var(--color-diff-add);
+  border-radius: 3px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+.diff-del {
+  background: var(--color-diff-del);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--color-clay) 60%, transparent);
+  border-radius: 3px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+.cliche-mark {
+  background: linear-gradient(transparent 60%, color-mix(in srgb, var(--color-gold) 40%, transparent) 60%);
+}
+
+input[type="range"] {
+  accent-color: var(--color-forest);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
