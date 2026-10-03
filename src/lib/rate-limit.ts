@@ -30,7 +30,7 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
 
 export async function wordsUsedToday(userId: string): Promise<number> {
   const row = await queryOne<{ total: string | null }>(
-    "SELECT COALESCE(SUM(words), 0) AS total FROM usage_events WHERE user_id = $1 AND created_at > now() - interval '24 hours'",
+    "SELECT COALESCE(SUM(words), 0) AS total FROM usage_events WHERE user_id = $1 AND kind <> 'image' AND created_at > now() - interval '24 hours'",
     [userId],
   );
   return Number(row?.total ?? 0);
@@ -56,4 +56,12 @@ export async function recordUsage(userId: string, kind: string, words: number): 
 
 export async function refundUsage(eventId: string) {
   await query("DELETE FROM usage_events WHERE id = $1", [eventId]);
+}
+
+export async function imagesUsedToday(userId: string): Promise<number> {
+  const row = await queryOne<{ n: string }>(
+    "SELECT COUNT(*) AS n FROM usage_events WHERE user_id = $1 AND kind = 'image' AND created_at > now() - interval '24 hours'",
+    [userId],
+  );
+  return Number(row?.n ?? 0);
 }

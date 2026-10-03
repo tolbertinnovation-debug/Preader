@@ -20,6 +20,21 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 - **Accounts**: sign up and sign in, reset a forgotten password by email, change your password (which signs out your other devices), download all your data, and delete your account.
 - **Mobile-first, responsive UI** with light and dark themes, keyboard support (`Ctrl/⌘ + Enter` rewrites), and reduced-motion support.
 
+## Image Humanizer
+
+The Image Humanizer (`/app/images`) turns AI-generated images into natural, photographic visuals. It uses OpenAI's GPT image editor (`gpt-image-2` by default), always at high quality.
+
+- **What it improves:** skin texture, lighting, anatomy (hands, eyes, teeth) and AI artefacts. Each can be switched on or off, and there are three strengths: Subtle, Balanced and Strong.
+- **What it preserves:** the editing instructions (`src/lib/images/prompt.ts`) put preservation above every improvement. Identity and facial features, skin tone (never lightened), hair texture, African features, pose, clothing and composition stay as they are.
+- **Mobile-first handling:** the phone corrects camera rotation and scales the image to a 2048-pixel long edge before upload. Re-encoding also strips EXIF metadata, including GPS location. Output keeps the input's aspect ratio.
+- **Comparison and download:** a before/after slider (touch and keyboard), plus side-by-side, before-only and after-only views. Downloads are full-resolution, 95%-quality JPEGs that keep OpenAI's C2PA Content Credentials, which record that AI was used.
+- **Security:**
+  - Images are processed in memory and never stored.
+  - Uploads are checked by their magic bytes (JPEG, PNG or WebP), whatever the filename or stated type claims.
+  - Same-origin checks and a consent confirmation are enforced on the server.
+  - Rate limits are a per-minute limit plus a daily image quota. The quota is charged before processing and refunded if processing fails, so simultaneous requests can't exceed it.
+  - Moderation refusals are explained to the user in plain language.
+
 ## How meaning is protected
 
 PanPen protects meaning in four layers:
@@ -125,6 +140,9 @@ Notes:
 | `DAILY_WORD_LIMIT` | `50000` | Words per user per rolling 24 hours |
 | `REWRITES_PER_MINUTE` | `8` | Rewrite requests per user per minute |
 | `ALLOW_SIGNUPS` | `true` | Close public registration |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-2` | Image Humanizer model |
+| `IMAGE_DAILY_LIMIT` | `10` | Images per user per rolling 24 hours |
+| `IMAGES_PER_MINUTE` | `3` | Image requests per user per minute |
 | `EMAIL_FROM` | `PanPen <no-reply@localhost>` | Sender for password-reset email |
 | `RESEND_API_KEY` | — | Send email through Resend |
 | `SMTP_URL` | — | Or send through SMTP (`smtps://user:pass@host:465`) |

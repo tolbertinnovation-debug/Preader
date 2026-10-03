@@ -6,6 +6,7 @@ import {
   Earth,
   Feather,
   GraduationCap,
+  Image as ImageIcon,
   Languages,
   Lock,
   PenLine,
@@ -46,6 +47,11 @@ const FEATURES = [
     icon: Lock,
     title: "Private by design",
     body: "Documents are encrypted at rest, never used to train models, and can be processed in Private mode without being saved at all. Delete everything in one click.",
+  },
+  {
+    icon: ImageIcon,
+    title: "Image Humanizer",
+    body: "Turn AI-generated images into natural, photographic visuals — real skin texture, believable light, correct hands and eyes — while keeping every face, skin tone and African feature exactly as it is.",
   },
   {
     icon: Scale,

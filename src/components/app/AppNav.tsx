@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { History, LogOut, PenLine, Settings } from "lucide-react";
+import { History, Image as ImageIcon, LogOut, PenLine, Settings } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cx } from "@/components/ui";
 import { api } from "@/lib/client";
 
 const LINKS = [
   { href: "/app", label: "Write", icon: PenLine },
+  { href: "/app/images", label: "Images", icon: ImageIcon },
   { href: "/app/history", label: "History", icon: History },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];
@@ -71,7 +72,7 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
       {/* Mobile bottom navigation */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
         {LINKS.map(({ href, label, icon: Icon }) => (
           <Link
