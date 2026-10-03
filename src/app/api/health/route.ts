@@ -1,4 +1,5 @@
 import { resolveDatabaseUrl } from "@/lib/db-url";
+import { deriveEncryptionKey } from "@/lib/encryption-key";
 import { queryOne } from "@/lib/db";
 import { emailConfigured } from "@/lib/email/send";
 import { env } from "@/lib/env";
@@ -27,7 +28,7 @@ export async function GET() {
   }
 
   const key = process.env.ENCRYPTION_KEY;
-  checks.encryptionKey = !key ? "missing" : Buffer.from(key, "base64").length === 32 ? "ok" : "invalid";
+  checks.encryptionKey = !key ? "missing" : deriveEncryptionKey(key) ? "ok" : "invalid";
   let mock = false;
   try {
     mock = env.aiProvider === "mock";

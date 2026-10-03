@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
-import { decrypt } from "@/lib/crypto";
+import { tryDecrypt } from "@/lib/crypto";
 import { query, queryOne } from "@/lib/db";
 import { getRewrite } from "@/lib/history";
 import { rateLimit } from "@/lib/rate-limit";
@@ -18,7 +18,7 @@ export const GET = route(async () => {
     {
       exportedAt: new Date().toISOString(),
       account: { email: user.email, name: user.name, createdAt: user.createdAt, preferences: user.preferences },
-      voiceSample: voice?.voice_sample_enc ? decrypt(voice.voice_sample_enc) : null,
+      voiceSample: tryDecrypt(voice?.voice_sample_enc),
       rewrites,
       usage,
     },

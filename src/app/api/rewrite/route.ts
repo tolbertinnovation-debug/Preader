@@ -1,7 +1,7 @@
 import { runRewrite } from "@/lib/ai/rewrite";
 import { getProvider } from "@/lib/ai/provider";
 import { requireUser } from "@/lib/auth/session";
-import { decrypt, sha256 } from "@/lib/crypto";
+import { sha256, tryDecrypt } from "@/lib/crypto";
 import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
 import { HttpError, assertSameOrigin, parseJson } from "@/lib/http";
@@ -47,7 +47,7 @@ export const POST = route(async (req) => {
   try {
     if (body.options.useVoiceSample) {
       const row = await queryOne<{ voice_sample_enc: string | null }>("SELECT voice_sample_enc FROM users WHERE id = $1", [user.id]);
-      voiceSample = row?.voice_sample_enc ? decrypt(row.voice_sample_enc) : null;
+      voiceSample = tryDecrypt(row?.voice_sample_enc);
     }
     provider = await getProvider();
   } catch (err) {

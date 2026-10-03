@@ -114,7 +114,7 @@ Notes:
 | --- | --- | --- |
 | `DATABASE_URL` | — | PostgreSQL connection string (required) |
 | `OPENAI_API_KEY` | — | Server-side OpenAI key (required) |
-| `ENCRYPTION_KEY` | — | 32 bytes, base64-encoded (required). **Back it up:** losing it makes stored documents unreadable. |
+| `ENCRYPTION_KEY` | — | Required. Either 32 random bytes, base64-encoded, or a random passphrase of 32+ characters (e.g. from a password manager), which is stretched with scrypt. **Back it up:** losing or changing it makes stored documents unreadable; such items then show a "can't be opened" notice. |
 | `OPENAI_MODEL` | `gpt-5.5` | Rewriting model |
 | `OPENAI_REASONING_EFFORT` | `medium` | `none`…`xhigh`; applies to reasoning models |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-large` | Model for the meaning-drift check |
