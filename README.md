@@ -20,6 +20,16 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 - **Accounts**: sign up and sign in, reset a forgotten password by email, change your password (which signs out your other devices), download all your data, and delete your account.
 - **Mobile-first, responsive UI** with light and dark themes, keyboard support (`Ctrl/⌘ + Enter` rewrites), and reduced-motion support.
 
+## Design (flyers and posters)
+
+PanPen Design (`/app/design`) creates flyers and posters the way a designer does. You supply your own text, prices, logo and photos, and they are laid out in templates. **Nothing is AI-generated.**
+
+- **Templates:** Promotion (badge, package and price cards, highlights), Event (hero photo, date and venue) and Announcement (centred notice with highlights).
+- **Sizes:** square post (1080×1080), portrait post (1080×1350), Story or WhatsApp status (1080×1920) and A4 print at 300 dpi (2480×3508).
+- **Colours and fonts:** four colour themes (PanPen, Royal, Clay, Midnight) and two headline styles. Text is automatically shrunk and wrapped so it never overflows, and optional elements are dropped before anything gets cramped.
+- **Runs on the device:** everything is drawn on the user's device with the canvas API (`src/components/design/render.ts`), so there are no API costs and no uploads. Logos and photos never leave the device. Text drafts are remembered in local browser storage.
+- **Downloads:** PNG or JPG at full resolution.
+
 ## Image Humanizer
 
 The Image Humanizer (`/app/images`) turns AI-generated images into natural, photographic visuals. It uses OpenAI's GPT image editor (`gpt-image-2` by default), always at high quality.
