@@ -41,7 +41,7 @@ export function assertSameOrigin(req: Request) {
     allowed.add(`${proto}://${host}`);
   }
   if (!origin || !allowed.has(origin)) {
-    throw new HttpError(403, "bad_origin", "This request did not come from Preader.");
+    throw new HttpError(403, "bad_origin", "This request did not come from PanPen.");
   }
 }
 

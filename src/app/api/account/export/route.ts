@@ -5,7 +5,7 @@ import { getRewrite } from "@/lib/history";
 import { rateLimit } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
 
-/** Data portability: everything Preader stores about the user, decrypted, as JSON. */
+/** Data portability: everything PanPen stores about the user, decrypted, as JSON. */
 export const GET = route(async () => {
   const user = await requireUser();
   await rateLimit(`data-export:${user.id}`, 5, 3600);
@@ -28,7 +28,7 @@ export const GET = route(async () => {
   return new Response(body, {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="preader-data-export.json"',
+      "Content-Disposition": 'attachment; filename="panpen-data-export.json"',
       "Cache-Control": "no-store",
     },
   });

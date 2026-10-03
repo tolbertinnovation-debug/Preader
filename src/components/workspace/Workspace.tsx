@@ -464,7 +464,7 @@ export function Workspace({
               ))}
             </div>
             <p className="mt-10 border-t border-line pt-4 text-xs text-muted">
-              Edited with Preader, powered by Tolbert Innovation Hub. Check flagged passages and follow your institution&apos;s guidance on disclosing AI-assisted editing.
+              Edited with PanPen, powered by Tolbert Innovation Hub. Check flagged passages and follow your institution&apos;s guidance on disclosing AI-assisted editing.
             </p>
           </article>
         )}

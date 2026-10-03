@@ -16,7 +16,7 @@ export function emailConfigured(): boolean {
 }
 
 function from(): string {
-  return process.env.EMAIL_FROM || "Preader <no-reply@localhost>";
+  return process.env.EMAIL_FROM || "PanPen <no-reply@localhost>";
 }
 
 let smtp: import("nodemailer").Transporter | null = null;

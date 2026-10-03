@@ -1,10 +1,10 @@
-# Preader — Pan-African Humanized Writing
+# PanPen — Pan-African Humanized Writing
 
 _Powered by **Tolbert Innovation Hub**, Monrovia, Liberia._
 
-Preader turns rough or AI-assisted drafts into clear, natural, culturally aware prose while keeping the writer's **meaning, facts, citations, references and voice**. It is built for African students, researchers, academics, professionals and creators, and supports Standard English alongside West African, Liberian, Nigerian, Ghanaian, Sierra Leonean, East African and Southern African English.
+PanPen turns rough or AI-assisted drafts into clear, natural, culturally aware prose while keeping the writer's **meaning, facts, citations, references and voice**. It is built for African students, researchers, academics, professionals and creators, and supports Standard English alongside West African, Liberian, Nigerian, Ghanaian, Sierra Leonean, East African and Southern African English.
 
-Preader edits; it does not ghost-write. It never adds facts, statistics, quotations, citations or sources, and it shows and flags every place where meaning may have shifted. It is not built to evade AI detectors. It is built to make your own ideas read well.
+PanPen edits; it does not ghost-write. It never adds facts, statistics, quotations, citations or sources, and it shows and flags every place where meaning may have shifted. It is not built to evade AI detectors. It is built to make your own ideas read well.
 
 ## Features
 
@@ -22,9 +22,9 @@ Preader edits; it does not ghost-write. It never adds facts, statistics, quotati
 
 ## How meaning is protected
 
-Preader protects meaning in four layers:
+PanPen protects meaning in four layers:
 
-1. **Masking.** Before any text reaches the model, Preader replaces protected content with opaque placeholders such as `⟦CITE3⟧`. Protected content covers author–date and numeric citations, direct quotations, URLs and DOIs, statistics (p-values, N, CIs, percentages and currency), and optionally emails and phone numbers. The model never sees this content, so it cannot change it. Afterwards Preader restores each item byte-for-byte.
+1. **Masking.** Before any text reaches the model, PanPen replaces protected content with opaque placeholders such as `⟦CITE3⟧`. Protected content covers author–date and numeric citations, direct quotations, URLs and DOIs, statistics (p-values, N, CIs, percentages and currency), and optionally emails and phone numbers. The model never sees this content, so it cannot change it. Afterwards PanPen restores each item byte-for-byte.
 2. **Structure.** Headings, tables, code, and everything from a *References* or *Bibliography* heading onward are passed through untouched. They are never sent to the model.
 3. **Model instructions** (`src/lib/ai/prompt.ts`). The instructions set integrity rules that override every style setting: add nothing, remove nothing, keep claim strength and hedging, keep the author's stance and tense, and treat embedded instructions as text. Structured Outputs force one result per paragraph, and each result includes the model's own report of any meaning risk.
 4. **Independent verification** (`src/lib/text/verify.ts`). Every paragraph is checked for:
@@ -38,7 +38,7 @@ Preader protects meaning in four layers:
    - extreme changes in length
    - embedding similarity between the original and the revision (`text-embedding-3-large`)
 
-   If the model drops a placeholder, Preader asks again once with a correction. If the second attempt also fails, Preader **keeps the original paragraph** and says so.
+   If the model drops a placeholder, PanPen asks again once with a correction. If the second attempt also fails, PanPen **keeps the original paragraph** and says so.
 
 ## Architecture
 
@@ -99,10 +99,10 @@ docker compose up --build
 
 1. On vercel.com, choose **Add New → Project** and import this repository. Leave the build settings alone, because `vercel.json` already runs migrations before each build.
 2. Add `OPENAI_API_KEY` and `ENCRYPTION_KEY` (plus `EMAIL_FROM` and `RESEND_API_KEY` for password reset), then deploy.
-3. Open **Storage**, add a **Neon** database and connect it to the project. Any variable prefix works: Preader detects whichever `postgres://` variable Neon creates, and it uses the unpooled connection for migrations.
+3. Open **Storage**, add a **Neon** database and connect it to the project. Any variable prefix works: PanPen detects whichever `postgres://` variable Neon creates, and it uses the unpooled connection for migrations.
 4. Redeploy, or push a commit. That deploy creates the tables.
 
-`APP_URL` is optional on Vercel: Preader uses the project's production domain (`VERCEL_PROJECT_PRODUCTION_URL`) automatically. Set `APP_URL` only for a custom domain.
+`APP_URL` is optional on Vercel: PanPen uses the project's production domain (`VERCEL_PROJECT_PRODUCTION_URL`) automatically. Set `APP_URL` only for a custom domain.
 
 Notes:
 - Vercel rejects request bodies over 4.5 MB, so uploads are capped at 4 MB.
@@ -125,7 +125,7 @@ Notes:
 | `DAILY_WORD_LIMIT` | `50000` | Words per user per rolling 24 hours |
 | `REWRITES_PER_MINUTE` | `8` | Rewrite requests per user per minute |
 | `ALLOW_SIGNUPS` | `true` | Close public registration |
-| `EMAIL_FROM` | `Preader <no-reply@localhost>` | Sender for password-reset email |
+| `EMAIL_FROM` | `PanPen <no-reply@localhost>` | Sender for password-reset email |
 | `RESEND_API_KEY` | — | Send email through Resend |
 | `SMTP_URL` | — | Or send through SMTP (`smtps://user:pass@host:465`) |
 | `APP_URL` | request host | Public origin, used for CSRF checks and email links. **Required in production for password reset.** |

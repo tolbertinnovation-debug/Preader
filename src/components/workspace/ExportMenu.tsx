@@ -12,7 +12,7 @@ export function ExportMenu({ title, segments, disabled }: { title: string; segme
   const [busy, setBusy] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const finalText = segments.map(chosenText).map((t) => t.trim()).filter(Boolean).join("\n\n");
-  const name = title.trim() || "Preader document";
+  const name = title.trim() || "PanPen document";
 
   useEffect(() => {
     if (!open) return;
