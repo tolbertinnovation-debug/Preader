@@ -13,7 +13,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
-  serverExternalPackages: ["pg", "mammoth", "unpdf", "docx", "nodemailer"],
+  serverExternalPackages: ["pg", "mammoth", "unpdf", "docx", "nodemailer", "@contentauth/c2pa-node", "exifr"],
+  // The C2PA SDK loads its native binary with a dynamic require that file tracing can't follow.
+  outputFileTracingIncludes: {
+    "/api/detect/image": ["./node_modules/@contentauth/c2pa-node/dist/index.node"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
