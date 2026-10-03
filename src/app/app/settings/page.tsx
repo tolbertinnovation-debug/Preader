@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SettingsForms } from "@/components/app/SettingsForms";
 import { requireUser } from "@/lib/auth/session";
-import { decrypt } from "@/lib/crypto";
+import { tryDecrypt } from "@/lib/crypto";
 import { queryOne } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -13,7 +13,7 @@ export default async function SettingsPage() {
     <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <h1 className="font-serif text-3xl font-semibold tracking-tight">Settings</h1>
       <p className="mb-6 mt-1 text-sm text-muted">Default style settings are saved from the writing workspace.</p>
-      <SettingsForms name={user.name} email={user.email} voiceSample={row?.voice_sample_enc ? decrypt(row.voice_sample_enc) : null} />
+      <SettingsForms name={user.name} email={user.email} voiceSample={tryDecrypt(row?.voice_sample_enc)} />
     </main>
   );
 }
