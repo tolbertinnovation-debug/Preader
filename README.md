@@ -93,6 +93,19 @@ export OPENAI_API_KEY=sk-... ENCRYPTION_KEY=$(openssl rand -base64 32)
 docker compose up --build
 ```
 
+## Deploying to Vercel
+
+1. On vercel.com, choose **Add New → Project** and import this repository. Vercel detects Next.js; leave the build settings alone, because `vercel.json` already runs migrations before each build.
+2. Add these environment variables: `OPENAI_API_KEY` and `ENCRYPTION_KEY`, plus `EMAIL_FROM` and `RESEND_API_KEY` if you want password reset. Then deploy. The first deploy can go out before a database exists; migrations are skipped until one is connected.
+3. Open the project's **Storage** tab, add a **Neon** Postgres database and connect it to the project. This sets `DATABASE_URL`.
+4. Set `APP_URL` to the live address (for example `https://preader.vercel.app`), then **Redeploy**. This deploy creates the tables.
+
+Notes:
+- Vercel rejects request bodies over 4.5 MB, so uploads are capped at 4 MB.
+- Each serverless instance keeps a small database pool (3 connections; override with `DB_POOL_MAX`).
+- Rewrites stream for up to 300 seconds, which is the Hobby plan's limit. For very long documents, lower `MAX_WORDS_PER_REQUEST`.
+- Vercel's Hobby plan is for personal, non-commercial use. Use Pro for a commercial or organisational deployment.
+
 ## Configuration
 
 | Variable | Default | Purpose |

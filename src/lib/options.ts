@@ -119,5 +119,6 @@ export const LIMITS = {
   maxChars: 120_000,
   maxGlossaryTerms: 50,
   maxVoiceSampleChars: 6000,
-  maxUploadBytes: 5 * 1024 * 1024,
+  // Vercel rejects request bodies over 4.5 MB, so stay safely below that.
+  maxUploadBytes: 4 * 1024 * 1024,
 };

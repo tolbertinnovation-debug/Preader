@@ -7,6 +7,11 @@ import pg from "pg";
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "db", "migrations");
 const url = process.env.DATABASE_URL;
 if (!url) {
+  // On Vercel the database is usually connected after the first deploy; don't block that deploy.
+  if (process.argv.includes("--skip-if-no-db")) {
+    console.warn("DATABASE_URL is not set — skipping migrations. Connect a database and redeploy.");
+    process.exit(0);
+  }
   console.error("DATABASE_URL is not set");
   process.exit(1);
 }

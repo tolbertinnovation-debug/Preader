@@ -8,7 +8,8 @@ function pool(): Pool {
   if (!globalForDb.__preaderPool) {
     globalForDb.__preaderPool = new Pool({
       connectionString: env.databaseUrl,
-      max: Number(process.env.DB_POOL_MAX ?? 10),
+      // Each serverless instance holds its own pool, so keep it small on Vercel.
+      max: Number(process.env.DB_POOL_MAX ?? (process.env.VERCEL ? 3 : 10)),
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 10_000,
       ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== "false" } : undefined,
