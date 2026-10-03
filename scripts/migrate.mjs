@@ -5,14 +5,25 @@ import { fileURLToPath } from "node:url";
 import pg from "pg";
 
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "db", "migrations");
-const url = process.env.DATABASE_URL;
+// Prefer a direct (unpooled) connection: advisory locks need a stable session, which
+// transaction-mode poolers (e.g. Neon's -pooler endpoint) don't guarantee.
+// Mirrors resolveDatabaseUrl() in src/lib/db-url.ts.
+function resolveDirectUrl(source) {
+  const isPg = (v) => !!v && /^postgres(?:ql)?:\/\//i.test(v);
+  const direct = (n) => /UNPOOLED|NON_POOLING|DIRECT/i.test(n);
+  const score = (n) =>
+    (direct(n) ? 10 : 0) + (/^DATABASE_URL/.test(n) ? 5 : 0) + (/^POSTGRES_URL/.test(n) ? 3 : 0) + (/_URL(?:_|$)/.test(n) ? 1 : 0);
+  const names = Object.keys(source).filter((n) => isPg(source[n])).sort((a, b) => score(b) - score(a));
+  return names.length ? source[names[0]] : undefined;
+}
+const url = resolveDirectUrl(process.env);
 if (!url) {
   // On Vercel the database is usually connected after the first deploy; don't block that deploy.
   if (process.argv.includes("--skip-if-no-db")) {
-    console.warn("DATABASE_URL is not set — skipping migrations. Connect a database and redeploy.");
+    console.warn("No database connection found — skipping migrations. Connect a database and redeploy.");
     process.exit(0);
   }
-  console.error("DATABASE_URL is not set");
+  console.error("No database connection found: set DATABASE_URL");
   process.exit(1);
 }
 

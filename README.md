@@ -95,10 +95,12 @@ docker compose up --build
 
 ## Deploying to Vercel
 
-1. On vercel.com, choose **Add New → Project** and import this repository. Vercel detects Next.js; leave the build settings alone, because `vercel.json` already runs migrations before each build.
-2. Add these environment variables: `OPENAI_API_KEY` and `ENCRYPTION_KEY`, plus `EMAIL_FROM` and `RESEND_API_KEY` if you want password reset. Then deploy. The first deploy can go out before a database exists; migrations are skipped until one is connected.
-3. Open the project's **Storage** tab, add a **Neon** Postgres database and connect it to the project. This sets `DATABASE_URL`.
-4. Set `APP_URL` to the live address (for example `https://preader.vercel.app`), then **Redeploy**. This deploy creates the tables.
+1. On vercel.com, choose **Add New → Project** and import this repository. Leave the build settings alone, because `vercel.json` already runs migrations before each build.
+2. Add `OPENAI_API_KEY` and `ENCRYPTION_KEY` (plus `EMAIL_FROM` and `RESEND_API_KEY` for password reset), then deploy.
+3. Open **Storage**, add a **Neon** database and connect it to the project. Any variable prefix works: Preader detects whichever `postgres://` variable Neon creates, and it uses the unpooled connection for migrations.
+4. Redeploy, or push a commit. That deploy creates the tables.
+
+`APP_URL` is optional on Vercel: Preader uses the project's production domain (`VERCEL_PROJECT_PRODUCTION_URL`) automatically. Set `APP_URL` only for a custom domain.
 
 Notes:
 - Vercel rejects request bodies over 4.5 MB, so uploads are capped at 4 MB.
