@@ -16,6 +16,8 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { PoweredBy } from "@/components/powered-by";
+import { ORG } from "@/lib/brand";
 import { getCurrentUser } from "@/lib/auth/session";
 import { MODES, VARIETIES } from "@/lib/options";
 
@@ -112,6 +114,7 @@ export default async function Home() {
             <p className="mt-5 flex items-center gap-2 text-sm text-muted">
               <ShieldCheck className="size-4 text-forest" /> Never invents facts or sources. Every change is shown and flagged.
             </p>
+            <PoweredBy className="mt-6" />
           </div>
 
           <div className="relative">
@@ -246,12 +249,26 @@ export default async function Home() {
             </Link>
           </div>
         </section>
+        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+          <div className="grid items-center gap-6 rounded-3xl border border-line bg-surface p-6 sm:p-10 md:grid-cols-[auto_1fr]">
+            <div className="kente h-16 w-16 rounded-2xl" aria-hidden />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-gold">{ORG.poweredBy}</p>
+              <p className="mt-2 max-w-3xl leading-relaxed text-ink-soft">{ORG.about}</p>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:px-6">
-          <Logo compact />
-          <p>Made for African voices, everywhere. © {new Date().getFullYear()} Preader.</p>
+          <div className="flex flex-col gap-2">
+            <Logo compact />
+            <PoweredBy />
+          </div>
+          <p>
+            Made for African voices, everywhere. © {new Date().getFullYear()} {ORG.name}, {ORG.location}.
+          </p>
         </div>
       </footer>
     </div>

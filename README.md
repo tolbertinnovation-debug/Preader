@@ -1,5 +1,7 @@
 # Preader — Pan-African Humanized Writing
 
+_Powered by **Tolbert Innovation Hub**, Monrovia, Liberia._
+
 Preader turns rough or AI-assisted drafts into clear, natural, culturally aware prose while keeping the writer's **meaning, facts, citations, references and voice**. It is built for African students, researchers, academics, professionals and creators, and supports Standard English alongside West African, Liberian, Nigerian, Ghanaian, Sierra Leonean, East African and Southern African English.
 
 Preader edits; it does not ghost-write. It never adds facts, statistics, quotations, citations or sources, and it shows and flags every place where meaning may have shifted. It is not built to evade AI detectors. It is built to make your own ideas read well.

@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description:
     "Turn rough or AI-assisted drafts into natural, culturally aware prose that keeps your meaning, facts, citations and voice. Built for African students, researchers and professionals.",
   applicationName: "Preader",
+  authors: [{ name: "Tolbert Innovation Hub" }],
+  creator: "Tolbert Innovation Hub",
+  publisher: "Tolbert Innovation Hub",
   robots: { index: true, follow: true },
 };
 
