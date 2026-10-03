@@ -1,0 +1,259 @@
+import Link from "next/link";
+import {
+  ArrowRight,
+  BookOpen,
+  Briefcase,
+  Earth,
+  Feather,
+  GraduationCap,
+  Languages,
+  Lock,
+  PenLine,
+  Quote,
+  Scale,
+  ShieldCheck,
+  Sparkles,
+  TriangleAlert,
+} from "lucide-react";
+import { Logo } from "@/components/logo";
+import { getCurrentUser } from "@/lib/auth/session";
+import { MODES, VARIETIES } from "@/lib/options";
+
+const FEATURES = [
+  {
+    icon: Quote,
+    title: "Citations stay untouched",
+    body: "Author–date and numeric citations, quotations, DOIs, links and statistics are locked away before editing and restored byte-for-byte afterwards. Your reference list is never sent for rewriting.",
+  },
+  {
+    icon: TriangleAlert,
+    title: "Meaning-change flags",
+    body: "Every paragraph is checked for lost figures, invented sources, flipped negatives, removed hedging and semantic drift — and flagged clearly so you stay in control.",
+  },
+  {
+    icon: Languages,
+    title: "African Englishes, respected",
+    body: "Write in Standard, British or American English — or West African, Liberian, Nigerian, Ghanaian, Sierra Leonean, East and Southern African English — without caricature or Pidgin.",
+  },
+  {
+    icon: Feather,
+    title: "Sounds like you",
+    body: "Preader preserves your vocabulary and stance, and can learn your rhythm from a sample of your own writing, so the result reads as your best work rather than a stranger's.",
+  },
+  {
+    icon: Lock,
+    title: "Private by design",
+    body: "Documents are encrypted at rest, never used to train models, and can be processed in Private mode without being saved at all. Delete everything in one click.",
+  },
+  {
+    icon: Scale,
+    title: "Transparent revision reports",
+    body: "Export a side-by-side report of every change and flag — ideal for supervisors, co-authors or your institution's AI-use disclosure.",
+  },
+];
+
+const MODE_ICONS = { academic: GraduationCap, research: BookOpen, essay: PenLine, professional: Briefcase, natural: Feather, simple: Sparkles, panafrican: Earth };
+
+export default async function Home() {
+  const user = await getCurrentUser();
+  return (
+    <div className="relative overflow-x-clip">
+      <div className="kente h-1.5 w-full" aria-hidden />
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+        <Logo />
+        <nav className="flex items-center gap-2 text-sm">
+          {user ? (
+            <Link href="/app" className="inline-flex h-10 items-center gap-2 rounded-xl bg-forest px-4 font-medium text-canvas hover:bg-forest-strong dark:text-[#0b1a10]">
+              Open workspace <ArrowRight className="size-4" />
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="rounded-xl px-3 py-2 font-medium text-ink-soft hover:text-ink">
+                Sign in
+              </Link>
+              <Link href="/signup" className="inline-flex h-10 items-center rounded-xl bg-forest px-4 font-medium text-canvas hover:bg-forest-strong dark:text-[#0b1a10]">
+                Get started
+              </Link>
+            </>
+          )}
+        </nav>
+      </header>
+
+      <main>
+        <section className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-8 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:pt-16">
+          <div className="adinkra-dots pointer-events-none absolute -right-24 -top-10 -z-10 size-[28rem] rounded-full opacity-60" aria-hidden />
+          <div>
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-gold">
+              <Earth className="size-3.5" /> Pan-African humanized writing
+            </p>
+            <h1 className="font-serif text-[2.6rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
+              Your ideas. <span className="text-forest">Your voice.</span>
+              <br />
+              Written naturally.
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+              Preader turns rough or AI-assisted drafts into clear, natural, culturally aware prose — while keeping your meaning,
+              facts, citations and voice exactly where they belong. Made for African students, researchers, academics, professionals and creators.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href={user ? "/app" : "/signup"}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-forest px-6 text-base font-medium text-canvas shadow-sm hover:bg-forest-strong dark:text-[#0b1a10]"
+              >
+                {user ? "Continue writing" : "Start writing free"} <ArrowRight className="size-4" />
+              </Link>
+              <a
+                href="#how"
+                className="inline-flex h-12 items-center justify-center rounded-xl border border-line-strong bg-surface px-6 text-base font-medium text-ink hover:bg-sunken"
+              >
+                See how it works
+              </a>
+            </div>
+            <p className="mt-5 flex items-center gap-2 text-sm text-muted">
+              <ShieldCheck className="size-4 text-forest" /> Never invents facts or sources. Every change is shown and flagged.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="rounded-3xl border border-line bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Before</span>
+                <span className="rounded-full bg-sunken px-2.5 py-0.5 text-xs font-semibold text-ink-soft">4 robotic patterns</span>
+              </div>
+              <p className="font-serif text-[15px] leading-relaxed text-ink-soft">
+                <span className="cliche-mark">In today&apos;s fast-paced world</span>, it is{" "}
+                <span className="cliche-mark">important to note that</span> land tenure{" "}
+                <span className="cliche-mark">plays a crucial role</span> in rural Liberia (Mensah, 2019).{" "}
+                <span className="cliche-mark">Furthermore,</span> 62% of households farm customary land.
+              </p>
+              <div className="my-5 flex items-center gap-3 text-xs text-muted">
+                <div className="h-px flex-1 bg-line" />
+                <Sparkles className="size-4 text-gold" /> Academic · Liberian English · Balanced
+                <div className="h-px flex-1 bg-line" />
+              </div>
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-forest">After</span>
+                <span className="rounded-full bg-forest-soft px-2.5 py-0.5 text-xs font-semibold text-forest">Meaning preserved</span>
+              </div>
+              <p className="font-serif text-[15px] leading-relaxed text-ink">
+                In rural Liberia, who holds land shapes almost every farming decision (Mensah, 2019). Most households — 62% — farm
+                land held under customary tenure.
+              </p>
+              <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+                {[
+                  ["Citation", "kept"],
+                  ["Figures", "kept"],
+                  ["Hedging", "kept"],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-xl bg-sunken px-2 py-2">
+                    <div className="text-[11px] uppercase tracking-wide text-muted">{k}</div>
+                    <div className="text-sm font-semibold text-forest">{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="kente absolute -bottom-3 left-8 right-8 -z-10 h-6 rounded-b-3xl opacity-80" aria-hidden />
+          </div>
+        </section>
+
+        <section className="border-y border-line bg-surface/60">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="max-w-2xl font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Editing that respects scholarship, culture and you.</h2>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {FEATURES.map(({ icon: Icon, title, body }) => (
+                <div key={title} className="rounded-2xl border border-line bg-surface p-6">
+                  <div className="mb-4 inline-flex size-10 items-center justify-center rounded-xl bg-forest-soft text-forest">
+                    <Icon className="size-5" />
+                  </div>
+                  <h3 className="font-semibold text-ink">{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-20 sm:px-6">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
+            <div>
+              <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Seven modes. Ten Englishes. One voice — yours.</h2>
+              <p className="mt-4 text-ink-soft">
+                Pick the purpose, the variety of English your readers expect, and how boldly to edit. Fine-tune tone, formality and readability.
+                Preader handles the rest and shows you every change.
+              </p>
+              <ol className="mt-8 space-y-5">
+                {[
+                  ["Paste or upload", "Drop in a .docx, PDF, text or Markdown file, or paste your draft."],
+                  ["Choose your style", "Academic to Simple English; Liberian to East African English; light polish to deep restructure."],
+                  ["Review side by side", "Compare every paragraph, see exactly what changed, check any flags, and keep or edit each one."],
+                  ["Export with confidence", "Copy, or download .docx, .md, .txt — plus an optional revision report."],
+                ].map(([t, d], i) => (
+                  <li key={t} className="flex gap-4">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gold-soft font-serif font-semibold text-gold">{i + 1}</span>
+                    <div>
+                      <div className="font-semibold">{t}</div>
+                      <div className="text-sm text-ink-soft">{d}</div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="grid content-start gap-3 sm:grid-cols-2">
+              {(Object.keys(MODES) as (keyof typeof MODES)[]).map((m) => {
+                const Icon = MODE_ICONS[m];
+                return (
+                  <div key={m} className={`rounded-2xl border border-line bg-surface p-5 ${m === "panafrican" ? "sm:col-span-2 border-gold/40 bg-gold-soft/40" : ""}`}>
+                    <div className="flex items-center gap-2 font-semibold">
+                      <Icon className="size-4 text-forest" /> {MODES[m].label}
+                    </div>
+                    <p className="mt-1.5 text-sm text-ink-soft">{MODES[m].blurb}</p>
+                  </div>
+                );
+              })}
+              <div className="flex flex-wrap gap-2 sm:col-span-2">
+                {Object.values(VARIETIES).map((v) => (
+                  <span key={v.label} className="rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-ink-soft">
+                    {v.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+          <div className="relative overflow-hidden rounded-3xl bg-forest px-6 py-12 text-canvas sm:px-12 dark:bg-forest-soft dark:text-ink">
+            <div className="kente absolute inset-x-0 top-0 h-1.5" aria-hidden />
+            <h2 className="max-w-3xl font-serif text-3xl font-semibold tracking-tight">Our integrity pledge</h2>
+            <div className="mt-6 grid gap-6 text-sm leading-relaxed opacity-90 md:grid-cols-3">
+              <p>
+                Preader is an editor, not a ghost-writer or a disguise. It is not designed to trick AI detectors — it is designed to make
+                your own ideas read clearly and naturally.
+              </p>
+              <p>
+                It never adds facts, statistics, quotations, citations or sources. When a revision might have shifted your meaning, it says so,
+                plainly, and lets you decide.
+              </p>
+              <p>
+                Follow your institution&apos;s policy on AI-assisted writing. Our revision report makes disclosure simple and honest.
+              </p>
+            </div>
+            <Link
+              href={user ? "/app" : "/signup"}
+              className="mt-8 inline-flex h-12 items-center gap-2 rounded-xl bg-gold px-6 font-medium text-[#1d1a16] hover:brightness-105"
+            >
+              {user ? "Open your workspace" : "Create your free account"} <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-line">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:px-6">
+          <Logo compact />
+          <p>Made for African voices, everywhere. © {new Date().getFullYear()} Preader.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
