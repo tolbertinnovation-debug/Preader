@@ -328,11 +328,13 @@ export function Workspace({
           </Button>
         </div>
         <ControlsPanel options={options} onChange={setOptions} hasVoiceSample={hasVoiceSample} disabled={running} onSaveDefaults={saveDefaults} />
-        <div className="sticky bottom-0 mt-6 bg-canvas pt-2 lg:hidden">
-          <Button className="w-full" size="lg" onClick={() => setPanelOpen(false)}>
-            Done
-          </Button>
-        </div>
+        {panelOpen && (
+          <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-canvas/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
+            <Button className="w-full" size="lg" onClick={() => setPanelOpen(false)}>
+              Done
+            </Button>
+          </div>
+        )}
       </aside>
 
       <section className="min-w-0 space-y-5">

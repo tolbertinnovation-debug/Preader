@@ -6,7 +6,7 @@ import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
 import { HttpError, assertSameOrigin, parseJson } from "@/lib/http";
 import { deriveTitle, saveRewrite } from "@/lib/history";
-import { assertWordQuota, rateLimit, recordUsage } from "@/lib/rate-limit";
+import { assertWordQuota, rateLimit, recordUsage, refundUsage } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
 import { segmentDocument } from "@/lib/text/segment";
 import { countWords } from "@/lib/text/words";
@@ -33,14 +33,27 @@ export const POST = route(async (req) => {
   }
   await rateLimit(`rewrite:${user.id}`, env.rewritesPerMinute, 60, "You're rewriting very quickly. Please wait a moment and try again.");
   await assertWordQuota(user.id, words);
-
-  let voiceSample: string | null = null;
-  if (body.options.useVoiceSample) {
-    const row = await queryOne<{ voice_sample_enc: string | null }>("SELECT voice_sample_enc FROM users WHERE id = $1", [user.id]);
-    voiceSample = row?.voice_sample_enc ? decrypt(row.voice_sample_enc) : null;
+  // Charge first, then re-check: concurrent requests can't jointly exceed the daily limit.
+  const usageId = await recordUsage(user.id, "rewrite", words);
+  try {
+    await assertWordQuota(user.id, words, words);
+  } catch (err) {
+    await refundUsage(usageId);
+    throw err;
   }
 
-  const provider = await getProvider();
+  let voiceSample: string | null = null;
+  let provider: Awaited<ReturnType<typeof getProvider>>;
+  try {
+    if (body.options.useVoiceSample) {
+      const row = await queryOne<{ voice_sample_enc: string | null }>("SELECT voice_sample_enc FROM users WHERE id = $1", [user.id]);
+      voiceSample = row?.voice_sample_enc ? decrypt(row.voice_sample_enc) : null;
+    }
+    provider = await getProvider();
+  } catch (err) {
+    await refundUsage(usageId);
+    throw err;
+  }
   const abort = new AbortController();
   req.signal.addEventListener("abort", () => abort.abort());
   const encoder = new TextEncoder();
@@ -56,6 +69,7 @@ export const POST = route(async (req) => {
       };
       // Keep proxies from closing an idle connection while the model is thinking.
       const heartbeat = setInterval(() => send({ type: "ping" }), 15_000);
+      let completed = false;
       try {
         for await (const event of runRewrite({
           text: body.text,
@@ -68,7 +82,7 @@ export const POST = route(async (req) => {
           meaningCheck: env.meaningCheck,
         })) {
           if (event.type === "done") {
-            await recordUsage(user.id, "rewrite", words);
+            completed = true;
             let historyId: string | null = null;
             if (!body.options.privateMode) {
               historyId = await saveRewrite({
@@ -97,6 +111,8 @@ export const POST = route(async (req) => {
         }
       } finally {
         clearInterval(heartbeat);
+        // Nothing was delivered: don't count it against the user's daily allowance.
+        if (!completed) await refundUsage(usageId).catch(() => {});
         try {
           controller.close();
         } catch {

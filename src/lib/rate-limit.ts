@@ -36,8 +36,8 @@ export async function wordsUsedToday(userId: string): Promise<number> {
   return Number(row?.total ?? 0);
 }
 
-export async function assertWordQuota(userId: string, words: number) {
-  const used = await wordsUsedToday(userId);
+export async function assertWordQuota(userId: string, words: number, alreadyCharged = 0) {
+  const used = (await wordsUsedToday(userId)) - alreadyCharged;
   if (used + words > env.dailyWordLimit) {
     const left = Math.max(0, env.dailyWordLimit - used);
     throw new HttpError(
@@ -48,6 +48,12 @@ export async function assertWordQuota(userId: string, words: number) {
   }
 }
 
-export async function recordUsage(userId: string, kind: string, words: number) {
-  await query("INSERT INTO usage_events (user_id, kind, words) VALUES ($1, $2, $3)", [userId, kind, words]);
+/** Charges usage up front (so parallel requests can't overshoot the quota); returns the event id for refunds. */
+export async function recordUsage(userId: string, kind: string, words: number): Promise<string> {
+  const row = await queryOne<{ id: string }>("INSERT INTO usage_events (user_id, kind, words) VALUES ($1, $2, $3) RETURNING id", [userId, kind, words]);
+  return row!.id;
+}
+
+export async function refundUsage(eventId: string) {
+  await query("DELETE FROM usage_events WHERE id = $1", [eventId]);
 }

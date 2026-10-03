@@ -2,7 +2,8 @@ import type { ModelSegmentOutput, Provider, RewriteCall } from "./types";
 
 /**
  * Deterministic stand-in for local development and automated tests (never used in production).
- * It performs simple, meaning-preserving clean-ups so the full pipeline can be exercised offline.
+ * It performs simple clean-ups so the full pipeline can be exercised offline — and deliberately
+ * overstates hedged claims ("may be" → "is") so the meaning-change flags can be seen in the UI.
  */
 const SWAPS: [RegExp, string][] = [
   [/\bIt is important to note that\s+(\w)/gi, "$1"],
@@ -16,6 +17,7 @@ const SWAPS: [RegExp, string][] = [
   [/\bdelve(s)? into\b/gi, "examine$1"],
   [/\bIn today's fast-paced world,\s*/gi, "Today, "],
   [/\ba myriad of\b/gi, "many"],
+  [/\bmay be\b/g, "is"],
   [/\bin the realm of\b/gi, "in"],
 ];
 
