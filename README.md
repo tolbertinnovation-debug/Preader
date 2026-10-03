@@ -24,10 +24,12 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 
 The Image Humanizer (`/app/images`) turns AI-generated images into natural, photographic visuals. It uses OpenAI's GPT image editor (`gpt-image-2` by default), always at high quality.
 
+- **Subject types:** People, Products, Places and Posters. Each adds its own preservation rules: products keep their branding and labels, places keep their landmarks, and posters keep every word, price and contact detail without rewriting. Any people in the image are always protected.
 - **What it improves:** skin texture, lighting, anatomy (hands, eyes, teeth) and AI artefacts. Each can be switched on or off, and there are three strengths: Subtle, Balanced and Strong.
 - **What it preserves:** the editing instructions (`src/lib/images/prompt.ts`) put preservation above every improvement. Identity and facial features, skin tone (never lightened), hair texture, African features, pose, clothing and composition stay as they are.
 - **Mobile-first handling:** the phone corrects camera rotation and scales the image to a 2048-pixel long edge before upload. Re-encoding also strips EXIF metadata, including GPS location. Output keeps the input's aspect ratio.
 - **Comparison and download:** a before/after slider (touch and keyboard), plus side-by-side, before-only and after-only views. Downloads are full-resolution, 95%-quality JPEGs that keep OpenAI's C2PA Content Credentials, which record that AI was used.
+- **Honest by design:** the app says plainly that it improves how images look but doesn't hide AI use. Results keep their Content Credentials, and platforms may still label them as AI. PanPen does not offer, and won't add, a way to remove provenance or evade AI labels.
 - **Security:**
   - Images are processed in memory and never stored.
   - Uploads are checked by their magic bytes (JPEG, PNG or WebP), whatever the filename or stated type claims.

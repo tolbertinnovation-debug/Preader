@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
-import { Columns2, Download, Hand, ImageUp, RefreshCw, ScanFace, ShieldCheck, Sparkles, Split, Square, Sun, WandSparkles, X } from "lucide-react";
+import { Columns2, Download, Hand, ImageUp, Info, Landmark, Newspaper, Package, RefreshCw, ScanFace, ShieldCheck, Sparkles, Split, Square, Sun, UserRound, WandSparkles, X } from "lucide-react";
 import { Alert, Button, Card, Label, Segmented, cx, useToast } from "@/components/ui";
 import { ApiError, downloadBlob, toApiError } from "@/lib/client";
 import {
@@ -9,7 +9,9 @@ import {
   IMAGE_FOCUS,
   IMAGE_LIMITS,
   IMAGE_STRENGTHS,
+  IMAGE_SUBJECTS,
   type ImageFocus,
+  type ImageSubject,
   type ImageOptions,
   type ImageStrength,
 } from "@/lib/images/options";
@@ -19,6 +21,7 @@ type Picture = { url: string; blob: Blob; width: number; height: number; name: s
 type View = "slider" | "side" | "before" | "after";
 
 const FOCUS_ICONS: Record<ImageFocus, typeof Sparkles> = { skin: ScanFace, lighting: Sun, anatomy: Hand, artifacts: Sparkles };
+const SUBJECT_ICONS: Record<ImageSubject, typeof Sparkles> = { people: UserRound, product: Package, scene: Landmark, graphic: Newspaper };
 const STAGES = ["Studying light and skin tones…", "Refining natural skin texture…", "Checking hands, eyes and details…", "Removing AI artefacts…", "Final photographic polish…"];
 
 /**
@@ -130,6 +133,7 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
       fd.append("image", original.blob, `${original.name}.jpg`);
       fd.append("width", String(original.width));
       fd.append("height", String(original.height));
+      fd.append("subject", options.subject);
       fd.append("strength", String(options.strength));
       fd.append("focus", options.focus.join(","));
       fd.append("consent", "true");
@@ -182,7 +186,7 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-serif text-3xl font-semibold tracking-tight">Image Humanizer</h1>
-            <p className="mt-1 text-sm text-muted">Make AI-generated images look natural — same people, same skin tones, same scene.</p>
+            <p className="mt-1 text-sm text-muted">Make AI-generated images look more natural — keeping the people, products and details that matter.</p>
           </div>
           <span className="rounded-full bg-sunken px-3 py-1 text-xs font-medium text-ink-soft">
             {left} of {limit} images left today
@@ -302,7 +306,7 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
             </div>
             {result && (
               <p className="mt-3 text-center text-xs text-muted">
-                Full-resolution JPEG, 95% quality. Download keeps the image&apos;s Content Credentials, which note that AI was used.
+                Full-resolution JPEG, 95% quality. The file keeps its Content Credentials, so platforms may still show an AI label.
               </p>
             )}
           </Card>
@@ -319,6 +323,33 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
       {/* Controls */}
       <aside className="space-y-5 lg:sticky lg:top-[4.5rem] lg:self-start">
         <Card className="space-y-5 p-5">
+          <div>
+            <Label>What&apos;s in the image?</Label>
+            <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label="Image subject">
+              {(Object.keys(IMAGE_SUBJECTS) as ImageSubject[]).map((s) => {
+                const Icon = SUBJECT_ICONS[s];
+                const on = options.subject === s;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    title={IMAGE_SUBJECTS[s].hint}
+                    onClick={() => setOptions((o) => ({ ...o, subject: s }))}
+                    className={cx(
+                      "flex flex-col items-center gap-1 rounded-xl border px-1 py-2 text-[11px] font-semibold transition-all",
+                      on ? "border-forest bg-forest-soft text-forest" : "border-line bg-surface text-muted hover:text-ink",
+                    )}
+                  >
+                    <Icon className="size-4" /> {IMAGE_SUBJECTS[s].label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-xs text-muted">{IMAGE_SUBJECTS[options.subject].hint}</p>
+          </div>
+
           <div>
             <Label hint={IMAGE_STRENGTHS[options.strength].label}>Enhancement strength</Label>
             <Segmented
@@ -356,8 +387,14 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
           </div>
 
           <div className="rounded-xl bg-gold-soft/60 p-3 text-xs leading-relaxed text-ink-soft">
-            <strong className="text-ink">Always preserved:</strong> identity and facial features, skin tone (never lightened), hair texture, African
-            features, pose, clothing and composition.
+            <strong className="text-ink">Always preserved:</strong>{" "}
+            {options.subject === "graphic"
+              ? "every word, price and contact detail, logos, layout and colours — and any people exactly as they are."
+              : options.subject === "product"
+                ? "the product's shape, colours and branding — and any people exactly as they are."
+                : options.subject === "scene"
+                  ? "the layout, buildings and landmarks — and any people exactly as they are."
+                  : "identity and facial features, skin tone (never lightened), hair texture, African features, pose, clothing and composition."}
           </div>
 
           <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed text-ink-soft">
@@ -380,9 +417,20 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
           {!original && <p className="-mt-2 text-center text-xs text-muted">Upload an image to begin.</p>}
           {left === 0 && <p className="-mt-2 text-center text-xs text-risk-high">You&apos;ve used all of today&apos;s images.</p>}
         </Card>
-        <p className="px-1 text-xs leading-relaxed text-muted">
-          Images are sent securely to OpenAI for editing and are not stored by PanPen. Nudity, violence and real-person impersonation are refused.
-        </p>
+        <div className="rounded-2xl border border-line bg-surface p-4 text-xs leading-relaxed text-ink-soft">
+          <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-ink">
+            <Info className="size-4 text-forest" /> What to expect
+          </p>
+          <ul className="list-disc space-y-1.5 pl-4">
+            <li>PanPen improves how an image looks: texture, light, anatomy and visible AI flaws. Results vary, and some images improve more than others.</li>
+            <li>
+              It does <strong className="text-ink">not</strong> hide that AI was used. Results keep their Content Credentials, and Facebook, Instagram and
+              other platforms may still label them as AI-made.
+            </li>
+            <li>Always check faces, hands and any text before you share or print.</li>
+            <li>Images are sent securely to OpenAI for editing and are never stored by PanPen. Nudity, violence and impersonation are refused.</li>
+          </ul>
+        </div>
       </aside>
     </div>
   );

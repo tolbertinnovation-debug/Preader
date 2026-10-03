@@ -15,9 +15,17 @@ export const IMAGE_FOCUS = {
 } as const;
 export type ImageFocus = keyof typeof IMAGE_FOCUS;
 
-export type ImageOptions = { strength: ImageStrength; focus: ImageFocus[] };
+export const IMAGE_SUBJECTS = {
+  people: { label: "People", hint: "Portraits, groups, events — faces and skin tones are kept exactly." },
+  product: { label: "Products", hint: "Items, food, packaging — shape, colours and branding are kept exactly." },
+  scene: { label: "Places", hint: "Buildings, streets, landscapes, interiors — layout and landmarks are kept." },
+  graphic: { label: "Posters", hint: "Flyers and social graphics — every word, price and logo is kept as is." },
+} as const;
+export type ImageSubject = keyof typeof IMAGE_SUBJECTS;
 
-export const DEFAULT_IMAGE_OPTIONS: ImageOptions = { strength: 2, focus: ["skin", "lighting", "anatomy", "artifacts"] };
+export type ImageOptions = { subject: ImageSubject; strength: ImageStrength; focus: ImageFocus[] };
+
+export const DEFAULT_IMAGE_OPTIONS: ImageOptions = { subject: "people", strength: 2, focus: ["skin", "lighting", "anatomy", "artifacts"] };
 
 export const IMAGE_LIMITS = {
   /** Vercel rejects request bodies over 4.5 MB; the browser compresses below this first. */
