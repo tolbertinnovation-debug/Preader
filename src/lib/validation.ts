@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VOICE_LIMITS } from "./text/voice";
 import { LIMITS, MODES, READABILITY, TONES, VARIETIES, type RewriteOptions } from "./options";
 
 const keys = <T extends Record<string, unknown>>(o: T) => Object.keys(o) as [keyof T & string, ...(keyof T & string)[]];
@@ -65,6 +66,7 @@ export const settingsSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   preferences: preferencesSchema.optional(),
   voiceSample: z.string().max(LIMITS.maxVoiceSampleChars).nullable().optional(),
+  voicePhrases: z.array(z.string().max(VOICE_LIMITS.maxPinnedChars)).max(VOICE_LIMITS.maxPinned).optional(),
 });
 
 export const passwordChangeSchema = z.object({

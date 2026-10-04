@@ -5,8 +5,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Download, Feather, KeyRound, ShieldCheck, Trash2, User } from "lucide-react";
 import { Button, Card, Label, inputClass, useToast } from "@/components/ui";
 import { api, ApiError } from "@/lib/client";
-import { LIMITS } from "@/lib/options";
-import { countWords } from "@/lib/text/words";
+import { VoiceSettings } from "./VoiceSettings";
 
 function Section({ icon: Icon, title, description, children }: { icon: typeof User; title: string; description: ReactNode; children: ReactNode }) {
   return (
@@ -25,11 +24,10 @@ function Section({ icon: Icon, title, description, children }: { icon: typeof Us
   );
 }
 
-export function SettingsForms({ name, email, voiceSample }: { name: string; email: string; voiceSample: string | null }) {
+export function SettingsForms({ name, email, voiceSample, voicePhrases }: { name: string; email: string; voiceSample: string | null; voicePhrases: string[] }) {
   const router = useRouter();
   const toast = useToast();
   const [busy, setBusy] = useState<string | null>(null);
-  const [sample, setSample] = useState(voiceSample ?? "");
 
   async function act(key: string, fn: () => Promise<unknown>, success: string) {
     setBusy(key);
@@ -70,39 +68,9 @@ export function SettingsForms({ name, email, voiceSample }: { name: string; emai
       <Section
         icon={Feather}
         title="Your writing voice"
-        description="Paste 150–800 words you wrote yourself — an essay, report or blog post. PanPen uses it only as a style reference so revisions sound like you. It's encrypted and never used to train models."
+        description="Add 300 or more words you wrote yourself, such as an essay, report or blog post. PanPen measures how you write so rewrites keep your words, rhythm and expressions. It's encrypted and never used to train models."
       >
-        <textarea
-          value={sample}
-          onChange={(e) => setSample(e.target.value)}
-          maxLength={LIMITS.maxVoiceSampleChars}
-          rows={8}
-          placeholder="A sample of your own writing…"
-          className={`${inputClass} prose-doc !text-[15px]`}
-          aria-label="Writing sample"
-        />
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <Button
-            onClick={() => act("voice", () => api("/api/account", { method: "PATCH", body: { voiceSample: sample.trim() || null } }), sample.trim() ? "Writing sample saved." : "Writing sample removed.")}
-            loading={busy === "voice"}
-          >
-            Save sample
-          </Button>
-          {voiceSample && (
-            <Button
-              variant="ghost"
-              onClick={async () => {
-                if (await act("voice-del", () => api("/api/account", { method: "PATCH", body: { voiceSample: null } }), "Writing sample removed.")) setSample("");
-              }}
-              loading={busy === "voice-del"}
-            >
-              Remove
-            </Button>
-          )}
-          <span className="ml-auto text-xs text-muted">
-            {countWords(sample)} words · {sample.length}/{LIMITS.maxVoiceSampleChars} characters
-          </span>
-        </div>
+        <VoiceSettings voiceSample={voiceSample} voicePhrases={voicePhrases} />
       </Section>
 
       <Section icon={KeyRound} title="Password" description="Changing your password signs you out on all other devices.">

@@ -9,6 +9,7 @@ import { deriveTitle, saveRewrite } from "@/lib/history";
 import { assertWordQuota, rateLimit, recordUsage, refundUsage } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
 import { segmentDocument } from "@/lib/text/segment";
+import { readPinned } from "@/lib/voice-store";
 import { countWords } from "@/lib/text/words";
 import { rewriteRequestSchema } from "@/lib/validation";
 
@@ -43,11 +44,16 @@ export const POST = route(async (req) => {
   }
 
   let voiceSample: string | null = null;
+  let voicePhrases: string[] = [];
   let provider: Awaited<ReturnType<typeof getProvider>>;
   try {
-    if (body.options.useVoiceSample) {
-      const row = await queryOne<{ voice_sample_enc: string | null }>("SELECT voice_sample_enc FROM users WHERE id = $1", [user.id]);
-      voiceSample = tryDecrypt(row?.voice_sample_enc);
+    if (body.options.useVoiceSample || body.options.preserveVoice) {
+      const row = await queryOne<{ voice_sample_enc: string | null; voice_phrases_enc: string | null }>(
+        "SELECT voice_sample_enc, voice_phrases_enc FROM users WHERE id = $1",
+        [user.id],
+      );
+      if (body.options.useVoiceSample) voiceSample = tryDecrypt(row?.voice_sample_enc);
+      voicePhrases = readPinned(row?.voice_phrases_enc);
     }
     provider = await getProvider();
   } catch (err) {
@@ -76,6 +82,7 @@ export const POST = route(async (req) => {
           title: body.title,
           options: body.options,
           voiceSample,
+          voicePhrases,
           provider,
           safetyId: sha256(`preader:${user.id}`).slice(0, 32),
           signal: abort.signal,

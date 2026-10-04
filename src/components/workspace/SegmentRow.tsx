@@ -87,6 +87,11 @@ export const SegmentRow = memo(function SegmentRow({
             {Math.round(seg.similarity * 100)}% similar in meaning
           </span>
         )}
+        {seg.voice && seg.voice.total > 0 && !seg.pending && (
+          <span className="text-[11px] text-muted" title="Share of your own words kept in this paragraph">
+            · {Math.round((seg.voice.kept / seg.voice.total) * 100)}% your words
+          </span>
+        )}
         {!seg.pending && (
           <div className="ml-auto flex items-center gap-1">
             {seg.accepted !== "revised" && (
@@ -168,7 +173,7 @@ export const SegmentRow = memo(function SegmentRow({
         </div>
       </div>
 
-      {!seg.pending && (seg.flags.length > 0 || seg.changes) && (
+      {!seg.pending && (seg.flags.length > 0 || seg.changes || (seg.voice?.dropped.length ?? 0) > 0) && (
         <footer className="space-y-2 border-t border-line bg-sunken/40 px-4 py-3 text-[13px] sm:px-5">
           {seg.flags.map((f, i) => (
             <div key={i} className="flex items-start gap-2">
@@ -179,6 +184,12 @@ export const SegmentRow = memo(function SegmentRow({
               <span className="text-ink-soft">{f.message}</span>
             </div>
           ))}
+          {seg.voice && seg.voice.dropped.length > 0 && (
+            <p className="text-ink-soft">
+              <span className="font-medium text-gold">Your expression{seg.voice.dropped.length === 1 ? "" : "s"} reworded:</span>{" "}
+              {seg.voice.dropped.map((d) => `“${d}”`).join(", ")}. Keep your original or edit this paragraph if you want {seg.voice.dropped.length === 1 ? "it" : "them"} back.
+            </p>
+          )}
           {seg.changes && <p className="text-muted">✎ {seg.changes}</p>}
         </footer>
       )}

@@ -253,7 +253,7 @@ export function Workspace({
         }
         if (got?.type !== "segment") throw new ApiError(0, "empty", "No new version came back. Please try again.");
         const s = got.segment;
-        update(id, { revised: s.revised, changes: s.changes, risk: s.risk, flags: s.flags, similarity: s.similarity, accepted: "revised", edited: undefined, retrying: false });
+        update(id, { revised: s.revised, changes: s.changes, risk: s.risk, flags: s.flags, similarity: s.similarity, voice: s.voice, accepted: "revised", edited: undefined, retrying: false });
         router.refresh();
       } catch (err) {
         toast(err instanceof ApiError ? err.message : "Couldn't rewrite that paragraph.", "high");
@@ -422,6 +422,7 @@ export function Workspace({
               onNextFlag={nextFlag}
               flaggedOnly={flaggedOnly}
               setFlaggedOnly={setFlaggedOnly}
+              voice={summary?.voice ?? null}
             />
             {!running && textSegs.length > 1 && (
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted">

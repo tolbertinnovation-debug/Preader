@@ -5,6 +5,7 @@ import { query, queryOne } from "@/lib/db";
 import { HttpError, assertSameOrigin, json, parseJson } from "@/lib/http";
 import { rateLimit } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
+import { cleanPinned } from "@/lib/text/voice";
 import { settingsSchema } from "@/lib/validation";
 import { z } from "zod";
 
@@ -19,6 +20,10 @@ export const PATCH = route(async (req) => {
   if (body.voiceSample !== undefined) {
     const v = body.voiceSample?.trim();
     await query("UPDATE users SET voice_sample_enc = $1, updated_at = now() WHERE id = $2", [v ? encrypt(v) : null, user.id]);
+  }
+  if (body.voicePhrases !== undefined) {
+    const phrases = cleanPinned(body.voicePhrases);
+    await query("UPDATE users SET voice_phrases_enc = $1, updated_at = now() WHERE id = $2", [phrases.length ? encrypt(JSON.stringify(phrases)) : null, user.id]);
   }
   return json({ ok: true });
 });

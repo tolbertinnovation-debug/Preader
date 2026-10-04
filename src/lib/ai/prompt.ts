@@ -1,7 +1,28 @@
 import { FORMALITY_LABELS, MODES, READABILITY, STRENGTHS, TONES, VARIETIES, type RewriteOptions } from "../options";
 import { ROBOTIC_PHRASES } from "../text/cliches";
+import { describeVoice, type VoiceProfile } from "../text/voice";
 
-export const PROMPT_VERSION = "2026-10-03.1";
+export const PROMPT_VERSION = "2026-10-04.1";
+
+/** What PanPen knows about how the author writes. */
+export type VoiceBrief = {
+  /** Excerpt of the author's saved writing sample, if they chose to match it. */
+  sample: string | null;
+  /** Measured from the saved sample. */
+  sampleProfile: VoiceProfile | null;
+  /** Measured from the draft being revised — the most direct evidence of the author's voice. */
+  draftProfile: VoiceProfile | null;
+};
+
+/** The sample excerpt sent to the model; the profile is measured from the full sample. */
+export const VOICE_SAMPLE_PROMPT_CHARS = 5000;
+
+const RETENTION_GUIDE: Record<RewriteOptions["strength"], string> = {
+  1: "Keep nearly all of the author's own words — roughly nine in ten. Change a word only when it is wrong, unclear or awkwardly repeated.",
+  2: "Keep most of the author's own words — roughly three in four. Rephrase only where it clearly reads better.",
+  3: "Even while restructuring sentences, reuse the author's own key words, terms and phrasing rather than swapping in synonyms.",
+  4: "Even while rebuilding paragraphs, carry over the author's key words, terms and expressions rather than replacing them with your own vocabulary.",
+};
 
 const MODE_GUIDE: Record<RewriteOptions["mode"], string> = {
   academic: `Academic writing for essays, theses, dissertations and journal articles.
@@ -68,7 +89,7 @@ const READABILITY_GUIDE: Record<RewriteOptions["readability"], string> = {
   expert: "Write for specialists; keep technical density where it carries meaning, but never pad.",
 };
 
-export function buildInstructions(opts: RewriteOptions, voiceSample: string | null): string {
+export function buildInstructions(opts: RewriteOptions, voice: VoiceBrief | null = null): string {
   const sections: string[] = [];
 
   sections.push(`You are PanPen, a senior editor who helps African students, researchers, academics, professionals and creators express THEIR OWN ideas in natural, authentic, culturally aware English. You revise the author's writing so it reads as the considered work of the person behind the ideas. You are an editor, not a ghost-writer: the ideas, evidence and argument belong to the author.
@@ -112,16 +133,33 @@ Formality: ${opts.formality}/5 (${FORMALITY_LABELS[opts.formality - 1]}).${opts.
 Readability: ${READABILITY[opts.readability].label}. ${READABILITY_GUIDE[opts.readability]}
 Rewriting strength: ${STRENGTHS[opts.strength].label}. ${STRENGTH_GUIDE[opts.strength]}`);
 
-  if (opts.preserveVoice) {
-    sections.push(`# The author's voice
-Preserve the author's voice: their characteristic vocabulary, the way they frame arguments, their level of warmth, and any distinctive turns of phrase that work. Improve the writing the way a good editor would for this specific person, so that they would recognise every sentence as their own.`);
+  const profile = voice?.sampleProfile ?? voice?.draftProfile ?? null;
+  if (opts.preserveVoice || voice?.sample) {
+    const lines = [
+      `# Sounding like the author
+The revision must still read as this author's own writing — better, clearer, but recognisably theirs. A reader who knows them should hear their voice in every sentence.
+- Their words: ${RETENTION_GUIDE[opts.strength]} Do not replace plain words with fancier ones, or regional usage with "neutral" phrasing.
+- Their expressions: each segment may list "keep" phrases — the author's own expressions. Keep every one of them, word for word (fix only spelling or grammar inside them if truly wrong). Never insert these phrases into segments where the author did not use them.
+- Their stance and warmth: keep how directly, modestly or passionately they say things. Don't make a warm writer formal or a plain writer ornate.`,
+    ];
+    if (profile) {
+      const measured = describeVoice(profile).filter((d) => d.label !== "Expressions");
+      lines.push(
+        `- Measured habits (${voice?.sampleProfile ? "from their writing sample" : "from this draft"}). Keep the revision close to these:
+${measured.map((d) => `  - ${d.label}: ${d.detail}`).join("\n")}
+- Rhythm in particular: keep their mix of short and long sentences. Do not even out sentence lengths or lengthen their sentences.
+- Favourite words: where one of the author's favourite words fits, keep it rather than a synonym. Do not add them where they weren't.
+- If a style setting above conflicts with one of these habits (for example contractions at high formality), follow the setting but stay as close to the author's habit as it allows.`,
+      );
+    }
+    sections.push(lines.join("\n"));
   }
 
-  if (voiceSample) {
+  if (voice?.sample) {
     sections.push(`# Voice reference
-Below is a sample of the author's own writing, provided only as a style reference. Match its typical sentence length, vocabulary level, warmth, use of first person and rhythm. Never copy wording, facts or ideas from it into the revision.
+Below is a sample of the author's own writing, provided only as a style reference for rhythm, vocabulary level, warmth and point of view. Never copy wording, facts or ideas from it into the revision.
 <voice_sample>
-${voiceSample}
+${voice.sample.slice(0, VOICE_SAMPLE_PROMPT_CHARS)}
 </voice_sample>`);
   }
 
@@ -135,12 +173,14 @@ Return JSON matching the schema: one entry per input segment, with the same ids,
 - revised: the revised segment.
 - changes: what you changed and why, in at most 20 words (e.g. "Cut stock transitions; varied sentence length; replaced nominalisations.").
 - meaning_risk: your honest judgement — "none" if the meaning is fully preserved, "low" if a nuance might read slightly differently, "high" if you are unsure a claim survived intact.
-- risk_note: if meaning_risk is not "none", say exactly which nuance may have shifted; otherwise an empty string.`);
+- risk_note: if meaning_risk is not "none", say exactly which nuance may have shifted; otherwise an empty string.
+If a segment has a "keep" list, every phrase in it must appear in that segment's revision.`);
 
   return sections.join("\n\n");
 }
 
-export type ModelSegmentInput = { id: string; text: string };
+/** `keep` lists the author's own expressions found in this segment, which must survive. */
+export type ModelSegmentInput = { id: string; text: string; keep?: string[] };
 
 export function buildInput(segments: ModelSegmentInput[], context: { title?: string; previous?: string; retryNote?: string }): string {
   const parts: string[] = [];

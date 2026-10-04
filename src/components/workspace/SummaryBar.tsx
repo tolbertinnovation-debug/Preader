@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowDown, ArrowRight, ShieldCheck, TriangleAlert } from "lucide-react";
+import { ArrowDown, ArrowRight, Feather, ShieldCheck, TriangleAlert } from "lucide-react";
 import { Button, cx } from "@/components/ui";
-import type { ReadabilityStats } from "./types";
+import type { ReadabilityStats, VoiceSummary } from "./types";
 
 type Metric = { label: string; key: keyof ReadabilityStats; better: "up" | "down" | "none"; hint: string };
 
@@ -25,6 +25,7 @@ export function SummaryBar({
   onNextFlag,
   flaggedOnly,
   setFlaggedOnly,
+  voice,
 }: {
   before: ReadabilityStats | null;
   after: ReadabilityStats | null;
@@ -35,6 +36,7 @@ export function SummaryBar({
   onNextFlag: () => void;
   flaggedOnly: boolean;
   setFlaggedOnly: (v: boolean) => void;
+  voice?: VoiceSummary | null;
 }) {
   const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
   return (
@@ -73,6 +75,7 @@ export function SummaryBar({
           );
         })}
       </div>
+      {!running && voice && <VoiceStrip voice={voice} />}
       {!running && after && (
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-3">
           {flagged === 0 ? (
@@ -97,6 +100,38 @@ export function SummaryBar({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/** "Sounds like you": how much of the writer's own wording, expressions and rhythm survived. */
+function VoiceStrip({ voice }: { voice: VoiceSummary }) {
+  const kept = Math.round(voice.wordsKept * 100);
+  const target = voice.rhythm.target;
+  const rhythmClose = target !== null ? Math.abs(voice.rhythm.after - target) <= 3 : Math.abs(voice.rhythm.after - voice.rhythm.before) <= 3;
+  return (
+    <div className="mt-4 rounded-xl border border-forest/20 bg-forest-soft/50 px-3 py-2.5">
+      <div className="flex items-center gap-2 text-sm font-semibold text-forest">
+        <Feather className="size-4" /> Sounds like you
+        <span className="text-[11px] font-normal text-muted">measured from your {voice.reference === "sample" ? "writing sample" : "draft"}</span>
+      </div>
+      <div className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-ink-soft">
+        <span title="Share of your own content words still in the revision">
+          <strong className="tabular-nums text-ink">{kept}%</strong> of your own words kept
+        </span>
+        {voice.expressionsTotal > 0 && (
+          <span title="Your expressions that were kept word for word">
+            <strong className="tabular-nums text-ink">
+              {voice.expressionsKept}/{voice.expressionsTotal}
+            </strong>{" "}
+            of your expressions kept
+          </span>
+        )}
+        <span title="Average words per sentence">
+          Sentence length <strong className="tabular-nums text-ink">{voice.rhythm.before}</strong> → <strong className={cx("tabular-nums", rhythmClose ? "text-forest" : "text-risk-medium")}>{voice.rhythm.after}</strong>
+          {target !== null && <span className="text-muted"> (your usual: {target})</span>}
+        </span>
+      </div>
     </div>
   );
 }
