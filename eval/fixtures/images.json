@@ -1,0 +1,24 @@
+{
+  "about": "Expected detector verdicts for each fixture with no detection model connected. 'trusted' lists the verdict when the C2PA test root (certs/test_cert_root_bundle.pem) is loaded as a trust anchor, if different.",
+  "items": [
+    { "file": "c2pa-ai-generated.jpg", "expect": "ai_generated", "note": "Signed credentials: created with generative AI" },
+    { "file": "c2pa-ai-generated.png", "expect": "ai_generated", "note": "Same, PNG container" },
+    { "file": "c2pa-ai-edited.jpg", "expect": "ai_edited", "note": "Signed credentials: composite with generative AI" },
+    { "file": "c2pa-photoshop-generative-fill.jpg", "expect": "ai_generated", "note": "Real Adobe file (from c2pa-rs): a Firefly-generated image later edited in Photoshop" },
+    { "file": "c2pa-camera-capture.jpg", "expect": "inconclusive", "trusted": "camera_capture", "note": "Camera capture is only accepted from a trusted signer" },
+    { "file": "c2pa-ai-then-altered.jpg", "expect": "likely_ai", "note": "Genuine AI credentials, pixels changed afterwards" },
+    { "file": "c2pa-valid-no-ai.jpg", "expect": "inconclusive", "note": "Valid credentials that don't mention AI (not proof of human)" },
+    { "file": "c2pa-data-changed.jpg", "expect": "tampered", "note": "c2pa-rs XCA.jpg: image data no longer matches" },
+    { "file": "c2pa-bad-signature.jpg", "expect": "tampered", "note": "c2pa-rs E-sig-CA.jpg: claim signature broken" },
+    { "file": "c2pa-remote-manifest.jpg", "expect": "inconclusive", "note": "Credentials stored online are not fetched" },
+    { "file": "sd-a1111-parameters.png", "expect": "ai_generated", "note": "Stable Diffusion WebUI parameters chunk" },
+    { "file": "comfyui-workflow.png", "expect": "ai_generated", "note": "ComfyUI prompt/workflow chunks" },
+    { "file": "xmp-trained-algorithmic.jpg", "expect": "ai_generated", "note": "IPTC DigitalSourceType in XMP" },
+    { "file": "xmp-composite-ai.jpg", "expect": "ai_edited", "note": "IPTC composite-with-AI in XMP" },
+    { "file": "exif-software-midjourney.jpg", "expect": "likely_ai", "note": "EXIF Software names an AI tool" },
+    { "file": "camera-exif-gps.jpg", "expect": "inconclusive", "note": "Camera EXIF is weak evidence, never a human verdict" },
+    { "file": "description-firefly-insect.jpg", "expect": "inconclusive", "note": "'firefly' in a description must not match Adobe Firefly" },
+    { "file": "plain-no-metadata.png", "expect": "inconclusive", "note": "No metadata is not proof of human creation" },
+    { "file": "plain.webp", "expect": "inconclusive", "note": "No metadata, WebP" }
+  ]
+}

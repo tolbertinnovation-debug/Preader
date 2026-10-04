@@ -30,7 +30,7 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
 
 export async function wordsUsedToday(userId: string): Promise<number> {
   const row = await queryOne<{ total: string | null }>(
-    "SELECT COALESCE(SUM(words), 0) AS total FROM usage_events WHERE user_id = $1 AND kind <> 'image' AND created_at > now() - interval '24 hours'",
+    "SELECT COALESCE(SUM(words), 0) AS total FROM usage_events WHERE user_id = $1 AND kind NOT IN ('image', 'detect') AND created_at > now() - interval '24 hours'",
     [userId],
   );
   return Number(row?.total ?? 0);
@@ -64,4 +64,22 @@ export async function imagesUsedToday(userId: string): Promise<number> {
     [userId],
   );
   return Number(row?.n ?? 0);
+}
+
+export async function detectionsToday(userId: string): Promise<number> {
+  const row = await queryOne<{ n: string }>(
+    "SELECT COUNT(*) AS n FROM usage_events WHERE user_id = $1 AND kind = 'detect' AND created_at > now() - interval '24 hours'",
+    [userId],
+  );
+  return Number(row?.n ?? 0);
+}
+
+/** Charges one detection against the daily limit; returns the usage id so failures can be refunded. */
+export async function chargeDetection(userId: string, limit: number): Promise<string> {
+  const id = await recordUsage(userId, "detect", 0);
+  if ((await detectionsToday(userId)) > limit) {
+    await refundUsage(id);
+    throw new HttpError(429, "quota_exceeded", `You've reached today's limit of ${limit} detections. Please try again tomorrow.`);
+  }
+  return id;
 }

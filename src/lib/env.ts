@@ -46,6 +46,10 @@ export const env = {
   maxWordsPerRequest: int("MAX_WORDS_PER_REQUEST", 8000),
   dailyWordLimit: int("DAILY_WORD_LIMIT", 50000),
   rewritesPerMinute: int("REWRITES_PER_MINUTE", 8),
+  detectDailyLimit: int("DETECT_DAILY_LIMIT", 60),
+  detectPerMinute: int("DETECT_PER_MINUTE", 8),
+  /** Vercel caps request bodies at 4.5 MB, so uploads stay at 4 MB there whatever is configured. */
+  detectMaxImageBytes: Math.min(int("DETECT_MAX_IMAGE_MB", 4), process.env.VERCEL ? 4 : 25) * 1024 * 1024,
   allowSignups: process.env.ALLOW_SIGNUPS !== "false",
   get aiProvider(): "openai" | "mock" {
     const p = process.env.AI_PROVIDER === "mock" ? "mock" : "openai";

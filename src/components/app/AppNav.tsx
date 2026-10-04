@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { History, Image as ImageIcon, LayoutTemplate, LogOut, PenLine, Settings } from "lucide-react";
+import { History, Image as ImageIcon, LayoutTemplate, LogOut, PenLine, ScanSearch, Settings } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cx } from "@/components/ui";
 import { api } from "@/lib/client";
@@ -11,9 +11,10 @@ const LINKS = [
   { href: "/app", label: "Write", icon: PenLine },
   { href: "/app/images", label: "Images", icon: ImageIcon },
   { href: "/app/design", label: "Design", icon: LayoutTemplate },
+  { href: "/app/detect", label: "Detect", icon: ScanSearch },
   { href: "/app/history", label: "History", icon: History },
-  { href: "/app/settings", label: "Settings", icon: Settings },
 ];
+const SETTINGS = { href: "/app/settings", label: "Settings", icon: Settings };
 
 export function AppNav({ name, used, limit }: { name: string; used: number; limit: number }) {
   const pathname = usePathname();
@@ -35,16 +36,18 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <Logo href="/app" />
           <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main">
-            {LINKS.map(({ href, label, icon: Icon }) => (
+            {[...LINKS, SETTINGS].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
+                title={label}
+                aria-label={label}
                 className={cx(
                   "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                   isActive(href) ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink",
                 )}
               >
-                <Icon className="size-4" /> {label}
+                <Icon className="size-4" /> <span className="hidden lg:inline">{label}</span>
               </Link>
             ))}
           </nav>
@@ -58,6 +61,18 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
               </div>
             </div>
             <span className="hidden max-w-32 truncate text-sm font-medium text-ink-soft lg:block">{name}</span>
+            {/* On phones Settings lives here; the bottom bar holds the five main tools. */}
+            <Link
+              href={SETTINGS.href}
+              className={cx(
+                "inline-flex size-9 items-center justify-center rounded-lg hover:bg-sunken hover:text-ink md:hidden",
+                isActive(SETTINGS.href) ? "bg-sunken text-forest" : "text-muted",
+              )}
+              aria-label="Settings"
+              title="Settings"
+            >
+              <Settings className="size-4" />
+            </Link>
             <button
               type="button"
               onClick={logout}

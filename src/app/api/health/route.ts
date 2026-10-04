@@ -1,6 +1,7 @@
 import { resolveDatabaseUrl } from "@/lib/db-url";
 import { deriveEncryptionKey } from "@/lib/encryption-key";
 import { queryOne } from "@/lib/db";
+import { gptZeroConfigured, sightengineConfigured } from "@/lib/detect/providers";
 import { emailConfigured } from "@/lib/email/send";
 import { env } from "@/lib/env";
 import { json } from "@/lib/http";
@@ -37,6 +38,10 @@ export async function GET() {
   }
   checks.openaiKey = mock || process.env.OPENAI_API_KEY ? "ok" : "missing";
   checks.email = emailConfigured() ? "ok" : "not set up";
+  // Optional AI-detection models. Without them the detector still checks Content Credentials,
+  // metadata and writing patterns, but returns no likelihood score.
+  checks.textDetector = gptZeroConfigured() ? "ok" : "not set up";
+  checks.imageDetector = sightengineConfigured() ? "ok" : "not set up";
 
   const required = ["database", "tables", "encryptionKey", "openaiKey"];
   const ok = required.every((k) => checks[k] === "ok");

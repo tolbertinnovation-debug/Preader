@@ -1,5 +1,5 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, hkdfSync, randomBytes, timingSafeEqual } from "node:crypto";
 import { deriveEncryptionKey, MIN_PASSPHRASE_LENGTH } from "./encryption-key";
 import { env } from "./env";
 
@@ -42,10 +42,22 @@ export function tryDecrypt(envelope: string | null | undefined): string | null {
   }
 }
 
-export function sha256(input: string): string {
+export function sha256(input: string | Uint8Array): string {
   return createHash("sha256").update(input).digest("hex");
 }
 
 export function randomToken(bytes = 32): string {
   return randomBytes(bytes).toString("base64url");
+}
+
+/** HMAC-SHA256 under a purpose-specific key derived from ENCRYPTION_KEY (base64url). */
+export function sign(purpose: string, data: string): string {
+  const k = Buffer.from(hkdfSync("sha256", key(), Buffer.alloc(0), `panpen/${purpose}`, 32));
+  return createHmac("sha256", k).update(data).digest("base64url");
+}
+
+export function verifySignature(purpose: string, data: string, signature: string): boolean {
+  const expected = Buffer.from(sign(purpose, data));
+  const given = Buffer.from(signature);
+  return expected.length === given.length && timingSafeEqual(expected, given);
 }

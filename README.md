@@ -18,6 +18,7 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 - **Export**: copy to clipboard, or download `.docx`, `.md` or `.txt`. You can also download a **revision report** (`.docx`) that lists every paragraph with its flags, which suits supervisors and AI-use disclosure.
 - **History**: your rewrites are encrypted and saved, and you can search, reopen and delete them. Your choices to keep, revert or edit are saved as you go.
 - **Accounts**: sign up and sign in, reset a forgotten password by email, change your password (which signs out your other devices), download all your data, and delete your account.
+- **AI Content Detector** for text and images, with evidence, highlights and reports: see [AI Content Detector](#ai-content-detector).
 - **Mobile-first, responsive UI** with light and dark themes, keyboard support (`Ctrl/⌘ + Enter` rewrites), and reduced-motion support.
 
 ## Design (flyers and posters)
@@ -46,6 +47,61 @@ The Image Humanizer (`/app/images`) turns AI-generated images into natural, phot
   - Same-origin checks and a consent confirmation are enforced on the server.
   - Rate limits are a per-minute limit plus a daily image quota. The quota is charged before processing and refunded if processing fails, so simultaneous requests can't exceed it.
   - Moderation refusals are explained to the user in plain language.
+
+## AI Content Detector
+
+The AI Content Detector (`/app/detect`) checks text and images for signs of AI generation. Each result shows a verdict, a likelihood score when a detection model produced one, the evidence behind it, highlighted passages, and a downloadable report. When the evidence is not strong it says **Inconclusive**.
+
+**Ground rules (enforced in code and tests):**
+
+- A percentage only ever comes from a detection model and is shown exactly as returned. PanPen never computes a score from metadata or writing patterns. If a provider's response is missing or malformed, no score is shown.
+- Missing metadata or Content Credentials is never treated as evidence of human creation. Camera EXIF is shown as weak evidence only.
+- Thresholds are conservative. Text needs at least 100 words and a model probability of 85% or more (95% under 250 words) for "Likely AI", and the same margin the other way for "Likely human". A model that reports low confidence never produces a verdict.
+- Every text result includes the caution that detectors flag non-native and African English writers more often.
+
+**Text:**
+
+- **Detection model:** [GPTZero](https://gptzero.me) (`GPTZERO_API_KEY`). It returns document-level probabilities (AI, mixed or human) and per-sentence scores, which become the sentence highlights.
+- **Writing patterns:** these are context only and never decide a result. They cover:
+  - leftover chatbot wording ("As an AI language model", "Certainly! Here's…", unfilled `[Your Name]` placeholders)
+  - hidden zero-width characters and look-alike letters from other alphabets, which are used to fool detectors
+  - stock phrases
+  - very even sentence rhythm
+- Paste text or upload `.docx`, `.pdf`, `.txt` or `.md`, up to 5,000 words.
+
+**Images (JPG, PNG, WebP, HEIC, AVIF):**
+
+- **Content Credentials (C2PA)** are verified with the official C2PA SDK (`@contentauth/c2pa-node`) against the official [C2PA Trust List](https://github.com/c2pa-org/conformance-public). Results include:
+  - whether the signature is valid and the signer is trusted
+  - whether the pixels changed after signing
+  - the declared IPTC digital source type, across the whole edit history (e.g. "created with generative AI", "edited with AI", "camera capture")
+- Remote manifests and OCSP lookups are disabled, so an uploaded image can't make the server fetch a URL.
+- **Metadata:**
+  - IPTC Digital Source Type in XMP
+  - generation settings left by Stable Diffusion WebUI, ComfyUI, InvokeAI and NovelAI
+  - AI tool names in software fields
+  - camera EXIF
+  - GPS (flagged as present, never shown)
+- **Detection model (optional):** [Sightengine](https://sightengine.com) `genai` (`SIGHTENGINE_API_USER`, `SIGHTENGINE_API_SECRET`).
+- **Order of trust:** verified Content Credentials, then declared metadata, then the model. "Camera capture" is only reported when a trusted signer says so.
+- The original bytes are analysed in memory and are never re-encoded or stored.
+- Invisible watermarks such as SynthID can't be checked, and the app says so.
+
+**Reports:**
+
+- Download a `.docx` report that includes the verdict, score, evidence table, highlighted text, the checks performed and the limitations, branded "Powered by Tolbert Innovation Hub". A JSON download is also available.
+- Results are sealed with an HMAC, so an edited result can't be turned into a PanPen report.
+- Nothing you check is stored. When a model is connected, the text or image is sent to that provider for scoring, and the page says so.
+
+**Without any API keys**, Content Credentials, metadata and writing-pattern checks still work fully. Text results are then always Inconclusive, because no model has scored them.
+
+**Testing accuracy:** `npm run eval:detect` runs a labelled corpus (`eval/corpus/text.json`) and image fixtures (`eval/fixtures/`) through the same code the app uses, and writes `eval/RESULTS.md`.
+
+- The human samples are public-domain writing by African and Liberian authors: Plaatje, Equiano, Hilary Teague and Edward Blyden.
+- The AI samples include imitations of Liberian, Nigerian, Ghanaian and West African English.
+- There are also AI-edited and mixed human/AI documents.
+- Set `GPTZERO_API_KEY` and the Sightengine keys to measure the live models.
+- Add your own modern samples with `EVAL_TEXT_DIR=/path` (sub-folders `human/`, `ai/`, `edited/`, `mixed/`). This is the best way to measure false positives on today's writing.
 
 ## How meaning is protected
 
@@ -155,6 +211,11 @@ Notes:
 | `OPENAI_IMAGE_MODEL` | `gpt-image-2` | Image Humanizer model |
 | `IMAGE_DAILY_LIMIT` | `10` | Images per user per rolling 24 hours |
 | `IMAGES_PER_MINUTE` | `3` | Image requests per user per minute |
+| `GPTZERO_API_KEY` | — | Optional text-detection model for the AI Content Detector |
+| `SIGHTENGINE_API_USER` / `SIGHTENGINE_API_SECRET` | — | Optional image-detection model |
+| `DETECT_DAILY_LIMIT` | `60` | Detector checks per user per rolling 24 hours |
+| `DETECT_PER_MINUTE` | `8` | Detector checks per user per minute |
+| `DETECT_MAX_IMAGE_MB` | `4` | Max image size to check (always 4 on Vercel, whose request limit is 4.5 MB) |
 | `EMAIL_FROM` | `PanPen <no-reply@localhost>` | Sender for password-reset email |
 | `RESEND_API_KEY` | — | Send email through Resend |
 | `SMTP_URL` | — | Or send through SMTP (`smtps://user:pass@host:465`) |
@@ -163,11 +224,11 @@ Notes:
 
 ## Scripts
 
-`npm run dev` · `npm run build` · `npm start` · `npm test` (Vitest) · `npm run lint` · `npm run typecheck` · `npm run db:migrate`
+`npm run dev` · `npm run build` · `npm start` · `npm test` (Vitest) · `npm run lint` · `npm run typecheck` · `npm run db:migrate` · `npm run eval:detect` (detector accuracy) · `npm run trust-list:update` (refresh the C2PA Trust List)
 
 ## Deployment notes
 
 - Serve over HTTPS. Production cookies are `Secure`.
-- Run `npm run db:migrate` (or the Docker entrypoint) on each deploy. Migrations take an advisory lock.
+- Run `npm run db:migrate` · `npm run eval:detect` (detector accuracy) · `npm run trust-list:update` (refresh the C2PA Trust List) (or the Docker entrypoint) on each deploy. Migrations take an advisory lock.
 - The rewrite route streams for up to 5 minutes, so any proxy in front must not buffer `application/x-ndjson`. The route already sends `X-Accel-Buffering: no`.
 - Rotating `ENCRYPTION_KEY` needs a re-encryption job. The ciphertext is versioned (`v1.`) to allow for one.
