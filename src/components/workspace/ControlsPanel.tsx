@@ -160,7 +160,7 @@ export function ControlsPanel({
       </div>
 
       <div className="space-y-4 rounded-2xl border border-line bg-surface p-4">
-        <Switch id="preserveVoice" checked={options.preserveVoice} onChange={(v) => set("preserveVoice", v)} label="Preserve my voice" description="Keep your vocabulary, stance and turns of phrase." />
+        <Switch id="preserveVoice" checked={options.preserveVoice} onChange={(v) => set("preserveVoice", v)} label="Preserve my voice" description="Keep your own words, rhythm and expressions, measured from your draft." />
         <Switch
           id="useVoiceSample"
           checked={options.useVoiceSample && hasVoiceSample}
@@ -169,7 +169,7 @@ export function ControlsPanel({
           label="Match my writing sample"
           description={
             hasVoiceSample ? (
-              "Mirror the rhythm of the sample in your settings."
+              "Also match the habits measured from the writing sample in your settings."
             ) : (
               <>
                 Add a sample of your writing in{" "}

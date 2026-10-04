@@ -118,7 +118,7 @@ export const MODE_PRESETS: Record<Mode, Partial<RewriteOptions>> = {
 export const LIMITS = {
   maxChars: 120_000,
   maxGlossaryTerms: 50,
-  maxVoiceSampleChars: 6000,
+  maxVoiceSampleChars: 15_000,
   // Vercel rejects request bodies over 4.5 MB, so stay safely below that.
   maxUploadBytes: 4 * 1024 * 1024,
 };

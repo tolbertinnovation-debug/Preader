@@ -11,6 +11,11 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 - **Seven modes:** Academic, Research, Essay, Professional, Natural, Simple English and Pan-African voice.
 - **Ten English varieties**, each with its own spelling and register conventions. African varieties are written as standard English, never as Pidgin or caricature.
 - **Controls** for tone, formality (1–5), readability (Simple to Expert) and rewriting strength (Light to Deep). You can also choose to preserve your voice, match a sample of your own writing, allow local expressions, hide personal details, use private mode, and protect a list of terms.
+- **Sounds like you:** rewrites keep the writer's own words, rhythm and expressions, which are measured rather than guessed (`src/lib/text/voice.ts`).
+  - **Voice profile:** sentence rhythm, contractions, point of view, spelling, punctuation habits, favourite words and recurring expressions. It's measured from the writer's saved sample when "Match my writing sample" is on, or from the draft itself when "Preserve my voice" is on.
+  - **Settings:** shows the profile live as you type. You can add a `.docx`, `.pdf` or `.txt` file to the sample, and pin "expressions to always keep" (e.g. "small-small", "my people").
+  - **Keeping expressions:** each paragraph's own expressions are sent with it, along with any doubled-word emphasis common in West African English. They must survive word for word. If one is dropped, PanPen retries once, then tells the writer which expression was reworded. Expressions are never inserted where the writer didn't use them.
+  - **Results** show "Sounds like you": how much of the writer's own wording was kept, how many expressions were kept, and sentence length compared with their usual. Each paragraph also shows how much of the writer's wording it kept.
 - **Side-by-side review**: each paragraph shows the original next to the revision, with tracked changes and a risk badge. You can keep the revision, revert to your original, edit it by hand, or rewrite that one paragraph again.
 - **Meaning-change flags**: see [How meaning is protected](#how-meaning-is-protected).
 - **Before/after metrics**: robotic-phrase count, rhythm variety, reading ease, grade level and sentence length.

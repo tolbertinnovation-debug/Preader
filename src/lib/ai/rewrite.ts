@@ -3,6 +3,7 @@ import { analyze, type ReadabilityStats } from "../text/readability";
 import { protect, restore, type Counter } from "../text/protect";
 import { batchSegments, joinSegments, segmentDocument, type SegmentKind } from "../text/segment";
 import { verifySegment, type Flag, type RiskLevel } from "../text/verify";
+import { buildVoiceProfile, droppedExpressions, expressionsToKeep, wordsKept } from "../text/voice";
 import { countWords } from "../text/words";
 import { buildInput, buildInstructions } from "./prompt";
 import { IncompleteError, type ModelSegmentOutput, type Provider } from "./types";
@@ -16,6 +17,19 @@ export type SegmentResult = {
   risk: RiskLevel;
   flags: Flag[];
   similarity: number | null;
+  /** How much of the writer's own wording survived (only when voice options are on). */
+  voice?: SegmentVoice;
+};
+
+export type SegmentVoice = { kept: number; total: number; dropped: string[] };
+
+export type VoiceSummary = {
+  /** Share (0–1) of the writer's own content words kept. */
+  wordsKept: number;
+  expressionsKept: number;
+  expressionsTotal: number;
+  rhythm: { before: number; after: number; target: number | null };
+  reference: "sample" | "draft";
 };
 
 export type RewriteSummary = {
@@ -27,6 +41,7 @@ export type RewriteSummary = {
   before: ReadabilityStats;
   after: ReadabilityStats;
   model: string;
+  voice?: VoiceSummary;
 };
 
 export type RewriteEvent =
@@ -40,6 +55,8 @@ export type RewriteParams = {
   title?: string;
   options: RewriteOptions;
   voiceSample: string | null;
+  /** Expressions the writer asked PanPen to always keep. */
+  voicePhrases?: string[];
   provider: Provider;
   safetyId: string;
   signal: AbortSignal;
@@ -48,7 +65,7 @@ export type RewriteParams = {
   concurrency?: number;
 };
 
-type Prepared = { id: string; original: string; masked: string; tokens: Record<string, string> };
+type Prepared = { id: string; original: string; masked: string; tokens: Record<string, string>; keep: string[] };
 
 export function cosine(a: number[], b: number[]): number {
   let dot = 0;
@@ -73,7 +90,7 @@ async function callBatch(
     const out = await params.provider.rewrite({
       instructions,
       input: buildInput(
-        batch.map((b) => ({ id: b.id, text: b.masked })),
+        batch.map((b) => (b.keep.length ? { id: b.id, text: b.masked, keep: b.keep } : { id: b.id, text: b.masked })),
         { title: params.title, ...context },
       ),
       signal: params.signal,
@@ -130,12 +147,22 @@ export async function* runRewrite(params: RewriteParams): AsyncGenerator<Rewrite
   }
   if (results.size) yield { type: "progress", done: results.size, total };
 
+  // "Sounds like you": measure the writer's habits from their sample and from this draft.
+  const sample = options.useVoiceSample ? params.voiceSample?.trim() || null : null;
+  const voiceOn = options.preserveVoice || !!sample;
+  const sampleProfile = sample ? buildVoiceProfile(sample) : null;
+  const draftProfile = voiceOn ? buildVoiceProfile(segments.filter((s) => s.kind === "text").map((s) => s.text).join("\n\n")) : null;
+  const candidates = voiceOn ? [...(params.voicePhrases ?? []), ...(sampleProfile?.expressions ?? []), ...(draftProfile?.expressions ?? [])] : [];
+
   const counter: Counter = { n: 0 };
   const prepared: Prepared[] = segments
     .filter((s) => s.kind === "text")
-    .map((s) => ({ id: s.id, original: s.text, ...protect(s.text, { maskPersonal: options.maskPersonal }, counter) }));
+    .map((s) => {
+      const p = protect(s.text, { maskPersonal: options.maskPersonal }, counter);
+      return { id: s.id, original: s.text, ...p, keep: voiceOn ? expressionsToKeep(p.masked, candidates) : [] };
+    });
 
-  const instructions = buildInstructions(options, params.voiceSample);
+  const instructions = buildInstructions(options, voiceOn ? { sample, sampleProfile, draftProfile } : null);
   const batches = batchSegments(
     prepared.map((p) => ({ ...p, text: p.masked })),
     params.batchWords ?? 650,
@@ -155,13 +182,26 @@ export async function* runRewrite(params: RewriteParams): AsyncGenerator<Rewrite
     const previous = index > 0 ? batches[index - 1]?.at(-1)?.masked : undefined;
     const outputs = await callBatch(params, instructions, batch, { previous });
 
-    // One corrective retry for segments whose protected placeholders did not survive.
-    const failing = batch.filter((p) => placeholderProblems(p, outputs.get(p.id)));
+    // One corrective retry for segments that lost protected placeholders or the writer's own expressions.
+    const dropped = (p: Prepared, o: ModelSegmentOutput | undefined) => (o && p.keep.length ? droppedExpressions(o.revised, p.keep) : []);
+    const problem = (p: Prepared, o: ModelSegmentOutput | undefined): string | null => {
+      const placeholders = placeholderProblems(p, o);
+      if (placeholders) return placeholders;
+      const lost = dropped(p, o);
+      return lost.length ? `In segment ${p.id} keep the author's own expressions exactly as written: ${lost.map((e) => `"${e}"`).join(", ")}.` : null;
+    };
+    const failing = batch.filter((p) => problem(p, outputs.get(p.id)));
     if (failing.length) {
-      const note = failing.map((p) => placeholderProblems(p, outputs.get(p.id))).join(" ");
+      const note = failing.map((p) => problem(p, outputs.get(p.id))).join(" ");
       try {
         const retry = await callBatch(params, instructions, failing, { previous, retryNote: note });
-        for (const [id, o] of retry) if (!placeholderProblems(failing.find((f) => f.id === id)!, o)) outputs.set(id, o);
+        for (const [id, o] of retry) {
+          const p = failing.find((f) => f.id === id);
+          if (!p || placeholderProblems(p, o)) continue;
+          const prev = outputs.get(id);
+          // Take the retry if the first answer was unusable, or if it kept more of the writer's expressions.
+          if (placeholderProblems(p, prev) || dropped(p, o).length < dropped(p, prev).length) outputs.set(id, o);
+        }
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") throw err;
       }
@@ -189,6 +229,7 @@ export async function* runRewrite(params: RewriteParams): AsyncGenerator<Rewrite
           risk: "low",
           flags: [{ level: "low", code: "kept_original", message: "We kept your original wording here to protect cited or quoted material. Try a lighter rewriting strength." }],
           similarity: null,
+          ...(voiceOn ? { voice: { ...wordsKept(p.original, p.original), dropped: [] } } : {}),
         };
       }
       const restored = restore(out!.revised, p.tokens);
@@ -202,7 +243,8 @@ export async function* runRewrite(params: RewriteParams): AsyncGenerator<Rewrite
         modelNote: out!.risk_note,
         similarity: sims[i] ?? null,
       });
-      return { id: p.id, kind: "text", original: p.original, revised, changes: out!.changes, risk, flags, similarity: sims[i] ?? null };
+      const voice: SegmentVoice | undefined = voiceOn ? { ...wordsKept(p.original, revised), dropped: droppedExpressions(revised, p.keep) } : undefined;
+      return { id: p.id, kind: "text", original: p.original, revised, changes: out!.changes, risk, flags, similarity: sims[i] ?? null, ...(voice ? { voice } : {}) };
     });
   };
 
@@ -238,6 +280,22 @@ export async function* runRewrite(params: RewriteParams): AsyncGenerator<Rewrite
 
   const ordered = segments.map((s) => results.get(s.id)!);
   const finalText = joinSegments(ordered.map((r) => r.revised));
+  const after = analyze(finalText);
+  let voice: VoiceSummary | undefined;
+  if (voiceOn) {
+    const v = ordered.filter((r) => r.voice);
+    const kept = v.reduce((n, r) => n + r.voice!.kept, 0);
+    const total = v.reduce((n, r) => n + r.voice!.total, 0);
+    const keepTotal = prepared.reduce((n, p) => n + p.keep.length, 0);
+    const lost = v.reduce((n, r) => n + r.voice!.dropped.length, 0);
+    voice = {
+      wordsKept: total ? Math.round((kept / total) * 100) / 100 : 1,
+      expressionsKept: keepTotal - lost,
+      expressionsTotal: keepTotal,
+      rhythm: { before: before.avgSentenceLength, after: after.avgSentenceLength, target: sampleProfile?.rhythm.avg ?? null },
+      reference: sampleProfile ? "sample" : "draft",
+    };
+  }
   yield {
     type: "done",
     results: ordered,
@@ -248,8 +306,9 @@ export async function* runRewrite(params: RewriteParams): AsyncGenerator<Rewrite
       flagged: ordered.filter((r) => r.risk !== "none").length,
       highRisk: ordered.filter((r) => r.risk === "high").length,
       before,
-      after: analyze(finalText),
+      after,
       model: params.provider.model,
+      ...(voice ? { voice } : {}),
     },
   };
 }
