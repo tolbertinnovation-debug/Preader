@@ -8,6 +8,7 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 
 ## Features
 
+- **Authentic Writing Editor** (`/app/editor`): paste your draft, name your audience, and choose Conversational, Professional, Academic, Persuasive or Personal tone. Before revising, it identifies exactly three specific weaknesses with excerpts checked against the original. It then provides **A. the revised version**, **B. a short explanation of the actual improvements**, and **C. three suggestions for preserving your voice**. When essential personal details are missing, it asks questions before rewriting. Revisions reuse PanPen's protected-content and meaning-check pipeline, your saved voice sample is optional, and you can copy the revision or download the complete review. Reviews stay out of history and use the existing word allowance and rate limits. Requires the configured OpenAI writing service. Up to 4,000 words per review (or the configured request limit, if lower).
 - **Seven modes:** Academic, Research, Essay, Professional, Natural, Simple English and Pan-African voice.
 - **Ten English varieties**, each with its own spelling and register conventions. African varieties are written as standard English, never as Pidgin or caricature.
 - **Controls** for tone, formality (1–5), readability (Simple to Expert) and rewriting strength (Light to Deep). You can also choose to preserve your voice, match a sample of your own writing, allow local expressions, hide personal details, use private mode, and protect a list of terms.
