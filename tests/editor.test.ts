@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { assessmentSchema, editorOptions, editorRequestSchema, runEditor, type FeedbackCall } from "@/lib/editor/review";
+import { assessmentSchema, editorOptions, editorRequestSchema, sourceExcerpt, runEditor, type FeedbackCall } from "@/lib/editor/review";
 import { MockProvider } from "@/lib/ai/mock";
 import { DEFAULT_OPTIONS } from "@/lib/options";
 
@@ -71,8 +71,22 @@ describe("authentic writing editor", () => {
     const rewrite = vi.spyOn(provider, "rewrite");
     await expect(runEditor({ ...params, provider, feedback: async () => ({ ...assessment,
       weaknesses: assessment.weaknesses.map((w, i) => i === 0 ? { ...w, evidence: "I changed 500 lives" } : w),
-    }) })).rejects.toThrow("evidence validation");
+    }) })).rejects.toThrow("draft assessment");
     expect(rewrite).not.toHaveBeenCalled();
+  });
+
+  it("restores exact source whitespace without accepting changed facts", () => {
+    expect(sourceExcerpt("We interviewed\n  40 farmers.", "We interviewed 40 farmers.")).toBe("We interviewed\n  40 farmers.");
+    expect(sourceExcerpt("We interviewed 40 farmers.", "We interviewed 400 farmers.")).toBeNull();
+  });
+
+  it("retries invalid feedback before revising", async () => {
+    const feedback = vi.fn().mockResolvedValueOnce({ ...assessment, weaknesses: assessment.weaknesses.slice(0, 2) })
+      .mockResolvedValueOnce(assessment).mockResolvedValueOnce(report);
+    const result = await runEditor({ ...params, provider: new MockProvider(), feedback });
+    expect(result.revision).toBeTruthy();
+    expect(feedback).toHaveBeenCalledTimes(3);
+    expect(feedback.mock.calls[1]![0].instructions).toContain("previous response did not pass validation");
   });
 
   it("rejects wrong feedback counts and empty audience", () => {
