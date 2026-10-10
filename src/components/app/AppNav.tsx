@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { History, Image as ImageIcon, LayoutTemplate, LogOut, PenLine, ScanSearch, Settings } from "lucide-react";
+import { History, Image as ImageIcon, LayoutTemplate, LogOut, PenLine, ScanSearch, Settings, SpellCheck } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cx } from "@/components/ui";
 import { api } from "@/lib/client";
 
 const LINKS = [
   { href: "/app", label: "Write", icon: PenLine },
+  { href: "/app/editor", label: "Editor", icon: SpellCheck },
   { href: "/app/images", label: "Images", icon: ImageIcon },
   { href: "/app/design", label: "Design", icon: LayoutTemplate },
   { href: "/app/detect", label: "Detect", icon: ScanSearch },
@@ -61,7 +62,7 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
               </div>
             </div>
             <span className="hidden max-w-32 truncate text-sm font-medium text-ink-soft lg:block">{name}</span>
-            {/* On phones Settings lives here; the bottom bar holds the five main tools. */}
+            {/* On phones Settings lives here; the bottom bar holds the main tools. */}
             <Link
               href={SETTINGS.href}
               className={cx(
@@ -88,7 +89,7 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
       {/* Mobile bottom navigation */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
         {LINKS.map(({ href, label, icon: Icon }) => (
           <Link
