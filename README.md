@@ -8,6 +8,7 @@ PanPen edits; it does not ghost-write. It never adds facts, statistics, quotatio
 
 ## Features
 
+- **Shared starting defaults:** Natural mode, Liberian English, Neutral tone, Relaxed formality, General readability and Deep rewriting. Preserve my voice, Match my writing sample and Allow local expressions are enabled; Hide personal details and Private mode are disabled. Saved user preferences override these defaults. Matching a writing sample takes effect only when that user has provided their own sample; otherwise PanPen preserves the voice of their draft.
 - **Seven modes:** Academic, Research, Essay, Professional, Natural, Simple English and Pan-African voice.
 - **Ten English varieties**, each with its own spelling and register conventions. African varieties are written as standard English, never as Pidgin or caricature.
 - **Controls** for tone, formality (1–5), readability (Simple to Expert) and rewriting strength (Light to Deep). You can also choose to preserve your voice, match a sample of your own writing, allow local expressions, hide personal details, use private mode, and protect a list of terms.
