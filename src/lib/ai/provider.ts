@@ -54,6 +54,28 @@ function parseOutput(text: string): ModelSegmentOutput[] {
   );
 }
 
+/** Shared authenticated, private Structured Outputs call for editorial feedback. */
+export async function requestStructured(call: RewriteCall, name: string, schema: Record<string, unknown>): Promise<unknown> {
+  try {
+    const res = await openai().responses.create({
+      model: env.model,
+      instructions: call.instructions,
+      input: call.input,
+      store: false,
+      safety_identifier: call.safetyId,
+      max_output_tokens: 8000,
+      ...(supportsReasoning(env.model) && env.reasoningEffort !== "none" ? { reasoning: { effort: env.reasoningEffort } } : {}),
+      text: { format: { type: "json_schema", name, schema, strict: true } },
+    }, { signal: call.signal });
+    if (res.status === "incomplete") throw new HttpError(502, "editor_incomplete", "The editor could not finish its feedback. Try a shorter passage.");
+    if (res.output.some((o) => o.type === "message" && o.content.some((c) => c.type === "refusal"))) {
+      throw new HttpError(422, "ai_refused", "The writing service declined to edit this passage.");
+    }
+    try { return JSON.parse(res.output_text) as unknown; }
+    catch { throw new HttpError(502, "ai_bad_output", "The editor returned unreadable feedback. Please try again."); }
+  } catch (err) { mapError(err); }
+}
+
 class OpenAIProvider implements Provider {
   model = env.model;
 
