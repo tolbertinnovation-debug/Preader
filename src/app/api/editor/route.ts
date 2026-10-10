@@ -3,7 +3,7 @@ import { getProvider, requestStructured } from "@/lib/ai/provider";
 import { sha256, tryDecrypt } from "@/lib/crypto";
 import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
-import { editorRequestSchema, EDITOR_MAX_WORDS, runEditor } from "@/lib/editor/review";
+import { editorRequestSchema, EDITOR_MAX_WORDS, EditorFeedbackError, runEditor } from "@/lib/editor/review";
 import { assertSameOrigin, HttpError, json, parseJson } from "@/lib/http";
 import { resolveOptions } from "@/lib/preferences";
 import { assertWordQuota, rateLimit, recordUsage, refundUsage } from "@/lib/rate-limit";
@@ -33,6 +33,7 @@ export const POST = route(async (req) => {
   req.signal.addEventListener("abort", cancel, { once: true });
   if (req.signal.aborted) abort.abort();
   const timeout = setTimeout(cancel, 280000);
+  let phase = "preferences";
   try {
     await assertWordQuota(user.id, words, words);
     const voice = await queryOne<{ voice_sample_enc: string | null; voice_phrases_enc: string | null }>(
@@ -42,7 +43,7 @@ export const POST = route(async (req) => {
       body, defaults: resolveOptions(user.preferences), provider: await getProvider(), feedback: requestStructured,
       voiceSample: body.useVoiceSample ? tryDecrypt(voice?.voice_sample_enc) : null,
       voicePhrases: readPinned(voice?.voice_phrases_enc), safetyId: sha256(`preader:${user.id}`).slice(0, 32),
-      signal: abort.signal, meaningCheck: env.meaningCheck,
+      signal: abort.signal, meaningCheck: env.meaningCheck, onPhase: (value) => { phase = value; },
     });
     if (!result.revision) await refundUsage(usageId);
     return json(result);
@@ -50,7 +51,10 @@ export const POST = route(async (req) => {
     abort.abort();
     await refundUsage(usageId).catch(() => {});
     if (err instanceof HttpError) throw err;
-    throw new HttpError(abort.signal.aborted && req.signal.aborted ? 499 : 502, "editor_failed", "The editor could not complete this review. Please try again or use a shorter passage.");
+    if (err instanceof EditorFeedbackError) throw new HttpError(502, `editor_${err.phase}_invalid`, err.message);
+    // Content-free diagnostics: never log drafts, feedback or raw database errors.
+    console.error("[preader] editor failed", { phase, type: err instanceof Error ? err.name : "unknown" });
+    throw new HttpError(abort.signal.aborted && req.signal.aborted ? 499 : 502, "editor_failed", `The editor could not complete the ${phase} step. Please try again. If this continues, contact support and mention editor_${phase}_failed.`);
   } finally {
     clearTimeout(timeout);
     req.signal.removeEventListener("abort", cancel);
