@@ -428,7 +428,7 @@ export function ImageHumanizer({ used, limit }: { used: number; limit: number })
               other platforms may still label them as AI-made.
             </li>
             <li>Always check faces, hands and any text before you share or print.</li>
-            <li>Images are sent securely to OpenAI for editing and are never stored by PanPen. Nudity, violence and impersonation are refused.</li>
+            <li>Images are sent securely to the image-editing service and are never stored by PanPen. Nudity, violence and impersonation are refused.</li>
           </ul>
         </div>
       </aside>

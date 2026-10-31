@@ -10,8 +10,6 @@ export type RewriteCall = {
   instructions: string;
   input: string;
   signal: AbortSignal;
-  /** Stable, non-identifying hash of the user for OpenAI abuse monitoring. */
-  safetyId: string;
 };
 
 export interface Provider {

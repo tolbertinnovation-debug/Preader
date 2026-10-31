@@ -36,14 +36,14 @@ export async function GET() {
   } catch {
     /* mock provider refused in production: fall through to the real key check */
   }
-  checks.openaiKey = mock || process.env.OPENAI_API_KEY ? "ok" : "missing";
+  checks.llamaKey = mock || process.env.LLAMA_API_KEY ? "ok" : "missing";
   checks.email = emailConfigured() ? "ok" : "not set up";
   // Optional AI-detection models. Without them the detector still checks Content Credentials,
   // metadata and writing patterns, but returns no likelihood score.
   checks.textDetector = gptZeroConfigured() ? "ok" : "not set up";
   checks.imageDetector = sightengineConfigured() ? "ok" : "not set up";
 
-  const required = ["database", "tables", "encryptionKey", "openaiKey"];
+  const required = ["database", "tables", "encryptionKey", "llamaKey"];
   const ok = required.every((k) => checks[k] === "ok");
   return json({ ok, checks }, { status: ok ? 200 : 503 });
 }

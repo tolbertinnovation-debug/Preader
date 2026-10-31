@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { buildImagePrompt } from "@/lib/images/prompt";
-import { supportsCustomSize, targetSize } from "@/lib/images/size";
 import { sniffImage } from "@/lib/images/validate";
 
 describe("buildImagePrompt", () => {
@@ -36,26 +35,6 @@ describe("subject-specific preservation", () => {
     const scene = buildImagePrompt({ subject: "scene", strength: 1, focus: ["lighting"] });
     expect(scene).toMatch(/architecture, landmarks/);
     expect(scene).toMatch(/Never lighten/);
-  });
-});
-
-describe("targetSize", () => {
-  it("keeps aspect ratio with sides divisible by 16 and caps the long edge", () => {
-    const [w, h] = targetSize(4032, 3024).split("x").map(Number);
-    expect(w).toBe(2048);
-    expect(h! % 16).toBe(0);
-    expect(Math.abs(w! / h! - 4 / 3)).toBeLessThan(0.02);
-  });
-
-  it("does not upscale small images and clamps extreme aspect ratios to 3:1", () => {
-    expect(targetSize(800, 600)).toBe("800x608");
-    const [w, h] = targetSize(3000, 500).split("x").map(Number);
-    expect(w! / h!).toBeLessThanOrEqual(3.05);
-  });
-
-  it("only uses custom sizes on models that support them", () => {
-    expect(supportsCustomSize("gpt-image-2")).toBe(true);
-    expect(supportsCustomSize("gpt-image-1.5")).toBe(false);
   });
 });
 

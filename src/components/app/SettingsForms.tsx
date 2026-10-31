@@ -109,7 +109,7 @@ export function SettingsForms({ name, email, voiceSample, voicePhrases }: { name
       <Section
         icon={ShieldCheck}
         title="Privacy & your data"
-        description="Documents are encrypted at rest (AES-256-GCM) and sent to OpenAI only for processing, with storage disabled. Citations, quotations, statistics and — if you choose — personal details are masked before they leave PanPen."
+        description="Documents are encrypted at rest (AES-256-GCM) and sent to Meta's Llama API only for processing. Citations, quotations, statistics and — if you choose — personal details are masked before they leave PanPen."
       >
         <div className="flex flex-col gap-3 sm:flex-row">
           <a href="/api/account/export" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-4 text-sm font-medium hover:bg-sunken">

@@ -89,14 +89,14 @@ export function editorOptions(body: EditorRequest, defaults: RewriteOptions): Re
 
 export async function runEditor(params: {
   body: EditorRequest; defaults: RewriteOptions; provider: Provider; feedback: FeedbackCall;
-  voiceSample: string | null; voicePhrases: string[]; safetyId: string; signal: AbortSignal; meaningCheck: boolean; onPhase?: (phase: "assessment" | "revision" | "report") => void;
+  voiceSample: string | null; voicePhrases: string[]; signal: AbortSignal; meaningCheck: boolean; onPhase?: (phase: "assessment" | "revision" | "report") => void;
 }): Promise<EditorResult> {
-  const { body, feedback, signal, safetyId } = params;
+  const { body, feedback, signal } = params;
   // Assessment must finish before any revision is requested.
   params.onPhase?.("assessment");
   const assessment = await validatedFeedback(feedback, {
     instructions: `${BASE_INSTRUCTIONS}\nBefore rewriting, identify exactly three specific weaknesses in the original text. For each, give a short exact excerpt from the original as evidence, explain its effect on this audience, and suggest the direction of improvement. If the text is already strong, describe modest opportunities; never fabricate errors to fill three slots. Ask up to three questions ONLY if missing personal details prevent an authentic edit without guessing. If the author has supplied enough information, return no questions. Do not rewrite yet.`,
-    input: JSON.stringify(body), signal, safetyId,
+    input: JSON.stringify(body), signal,
   }, "editor_assessment", assessmentSchema, (value) => {
     const weaknesses = value.weaknesses.map((w) => ({ ...w, evidence: sourceExcerpt(body.text, w.evidence) }));
     if (weaknesses.some((w) => w.evidence === null)) return null;
@@ -111,7 +111,7 @@ export async function runEditor(params: {
   for await (const event of runRewrite({
     text: body.text, options: editorOptions(body, params.defaults),
     voiceSample: params.voiceSample, voicePhrases: params.voicePhrases,
-    provider: params.provider, safetyId, signal, meaningCheck: params.meaningCheck,
+    provider: params.provider, signal, meaningCheck: params.meaningCheck,
     editorialContext: { audience: body.audience, tone: body.tone, authorDetails: body.authorDetails },
   })) {
     if (event.type === "done") segments = event.results;
@@ -121,7 +121,7 @@ export async function runEditor(params: {
   const report = await validatedFeedback(feedback, {
     instructions: `${BASE_INSTRUCTIONS}\nExplain the most important actual improvements in one short paragraph. Describe only changes visible in the supplied original and final revision, including unchanged or reverted passages honestly. Then give exactly three practical suggestions for making the writing reflect this author's voice more closely, grounded in their wording. Suggestions may ask for genuine personal details but must never supply invented examples, experiences or claims. Do not rewrite the revision.`,
     input: JSON.stringify({ audience: body.audience, tone: body.tone, original: body.text, revision,
-      changes: segments.map((s) => ({ changes: s.changes, flags: s.flags })) }), signal, safetyId,
+      changes: segments.map((s) => ({ changes: s.changes, flags: s.flags })) }), signal,
   }, "editor_report", reportSchema, (value) => value, "report");
   return { assessment, revision, ...report, segments };
 }

@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { getProvider, requestStructured } from "@/lib/ai/provider";
-import { sha256, tryDecrypt } from "@/lib/crypto";
+import { tryDecrypt } from "@/lib/crypto";
 import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
 import { editorRequestSchema, EDITOR_MAX_WORDS, EditorFeedbackError, runEditor } from "@/lib/editor/review";
@@ -42,7 +42,7 @@ export const POST = route(async (req) => {
     const result = await runEditor({
       body, defaults: resolveOptions(user.preferences), provider: await getProvider(), feedback: requestStructured,
       voiceSample: body.useVoiceSample ? tryDecrypt(voice?.voice_sample_enc) : null,
-      voicePhrases: readPinned(voice?.voice_phrases_enc), safetyId: sha256(`preader:${user.id}`).slice(0, 32),
+      voicePhrases: readPinned(voice?.voice_phrases_enc),
       signal: abort.signal, meaningCheck: env.meaningCheck, onPhase: (value) => { phase = value; },
     });
     if (!result.revision) await refundUsage(usageId);

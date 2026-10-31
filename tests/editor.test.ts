@@ -13,7 +13,7 @@ const assessment = {
   ], questions: [],
 };
 const report = { improvements: "Removed filler and used simpler verbs while keeping the findings.", suggestions: ["Keep your direct first-person wording.", "Retain the place names you use.", "Read it aloud and keep expressions you normally say."] };
-const params = { body, defaults: DEFAULT_OPTIONS, voiceSample: null, voicePhrases: [], safetyId: "test", signal: new AbortController().signal, meaningCheck: false };
+const params = { body, defaults: DEFAULT_OPTIONS, voiceSample: null, voicePhrases: [], signal: new AbortController().signal, meaningCheck: false };
 
 describe("authentic writing editor", () => {
   it("assesses before rewriting, reports actual changes and preserves protected content", async () => {

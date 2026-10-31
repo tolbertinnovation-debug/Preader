@@ -23,24 +23,20 @@ export const env = {
     if (!url) throw new Error("Missing database connection: set DATABASE_URL");
     return url;
   },
-  get openaiApiKey() {
-    return process.env.OPENAI_API_KEY ?? "";
+  get llamaApiKey() {
+    return process.env.LLAMA_API_KEY ?? "";
   },
+  /** Meta Llama API, OpenAI-compatible endpoint. */
+  llamaBaseUrl: process.env.LLAMA_BASE_URL || "https://api.llama.com/compat/v1",
   get encryptionKey() {
     return required("ENCRYPTION_KEY");
   },
   appUrl: resolveAppUrl(),
-  model: process.env.OPENAI_MODEL || "gpt-5.5",
-  reasoningEffort: (process.env.OPENAI_REASONING_EFFORT || "medium") as
-    | "none"
-    | "minimal"
-    | "low"
-    | "medium"
-    | "high"
-    | "xhigh",
-  embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || "text-embedding-3-large",
+  /** Rewriting model. Llama 4 Maverick is the strongest Llama API model for writing. */
+  model: process.env.LLAMA_MODEL || "Llama-4-Maverick-17B-128E-Instruct-FP8",
+  maxOutputTokens: int("LLAMA_MAX_OUTPUT_TOKENS", 4096),
+  /** Embedding meaning check: only the dev mock provides embeddings (the Llama API has none). */
   meaningCheck: process.env.MEANING_CHECK !== "false",
-  imageModel: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2",
   imageDailyLimit: int("IMAGE_DAILY_LIMIT", 10),
   imagesPerMinute: int("IMAGES_PER_MINUTE", 3),
   maxWordsPerRequest: int("MAX_WORDS_PER_REQUEST", 8000),
@@ -51,8 +47,8 @@ export const env = {
   /** Vercel caps request bodies at 4.5 MB, so uploads stay at 4 MB there whatever is configured. */
   detectMaxImageBytes: Math.min(int("DETECT_MAX_IMAGE_MB", 4), process.env.VERCEL ? 4 : 25) * 1024 * 1024,
   allowSignups: process.env.ALLOW_SIGNUPS !== "false",
-  get aiProvider(): "openai" | "mock" {
-    const p = process.env.AI_PROVIDER === "mock" ? "mock" : "openai";
+  get aiProvider(): "llama" | "mock" {
+    const p = process.env.AI_PROVIDER === "mock" ? "mock" : "llama";
     if (p === "mock" && isProd && process.env.ALLOW_MOCK_IN_PRODUCTION !== "true") {
       throw new Error("AI_PROVIDER=mock is not allowed in production");
     }

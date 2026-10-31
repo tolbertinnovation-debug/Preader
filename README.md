@@ -40,13 +40,15 @@ PanPen Design (`/app/design`) creates flyers and posters the way a designer does
 
 ## Image Humanizer
 
-The Image Humanizer (`/app/images`) turns AI-generated images into natural, photographic visuals. It uses OpenAI's GPT image editor (`gpt-image-2` by default), always at high quality.
+> **Currently unavailable.** PanPen's AI provider is Meta's Llama API, which can read images but has no image-editing endpoint. The page shows a notice, the navigation hides it, and `/api/images/humanize` returns `503 image_unavailable` before any quota is charged. The code below is kept so the feature can return with an image-editing provider; it still runs with `AI_PROVIDER=mock` for development.
+
+The Image Humanizer (`/app/images`) turns AI-generated images into natural, photographic visuals.
 
 - **Subject types:** People, Products, Places and Posters. Each adds its own preservation rules: products keep their branding and labels, places keep their landmarks, and posters keep every word, price and contact detail without rewriting. Any people in the image are always protected.
 - **What it improves:** skin texture, lighting, anatomy (hands, eyes, teeth) and AI artefacts. Each can be switched on or off, and there are three strengths: Subtle, Balanced and Strong.
 - **What it preserves:** the editing instructions (`src/lib/images/prompt.ts`) put preservation above every improvement. Identity and facial features, skin tone (never lightened), hair texture, African features, pose, clothing and composition stay as they are.
 - **Mobile-first handling:** the phone corrects camera rotation and scales the image to a 2048-pixel long edge before upload. Re-encoding also strips EXIF metadata, including GPS location. Output keeps the input's aspect ratio.
-- **Comparison and download:** a before/after slider (touch and keyboard), plus side-by-side, before-only and after-only views. Downloads are full-resolution, 95%-quality JPEGs that keep OpenAI's C2PA Content Credentials, which record that AI was used.
+- **Comparison and download:** a before/after slider (touch and keyboard), plus side-by-side, before-only and after-only views. Downloads are full-resolution, 95%-quality JPEGs that keep the editing service's C2PA Content Credentials, which record that AI was used.
 - **Honest by design:** the app says plainly that it improves how images look but doesn't hide AI use. Results keep their Content Credentials, and platforms may still label them as AI. PanPen does not offer, and won't add, a way to remove provenance or evade AI labels.
 - **Security:**
   - Images are processed in memory and never stored.
@@ -126,7 +128,7 @@ PanPen protects meaning in four layers:
    - hedging that was removed or certainty that was added
    - new causal language
    - extreme changes in length
-   - embedding similarity between the original and the revision (`text-embedding-3-large`)
+   - embedding similarity between the original and the revision (only when the provider offers embeddings; the Llama API doesn't, so production relies on the checks above)
 
    If the model drops a placeholder, PanPen asks again once with a correction. If the second attempt also fails, PanPen **keeps the original paragraph** and says so.
 
@@ -142,13 +144,13 @@ Next.js 16 (App Router, React 19, Tailwind v4)
 │   ├── api/history[/id]           list / open / update choices / delete
 │   ├── api/account[/password|/export]
 │   └── api/auth/{signup,login,logout}
-├── src/lib/ai/                    prompt engineering, OpenAI provider, orchestrator, dev mock
+├── src/lib/ai/                    prompt engineering, Llama API client + provider, orchestrator, dev mock
 ├── src/lib/text/                  segmentation, protection, verification, readability, robotic phrases
 ├── src/lib/auth/                  bcrypt passwords, hashed DB sessions
 └── db/migrations/                 plain SQL, applied by scripts/migrate.mjs
 ```
 
-- **AI:** the OpenAI **Responses API** with strict JSON-schema Structured Outputs, `store: false`, a hashed `safety_identifier`, and configurable reasoning effort. Long documents are split into batches of about 650 words. The batches run in parallel (three at a time), and results stream to the browser as each one finishes. If a response is truncated, the batch is split and retried.
+- **AI:** Meta's **Llama API** (Llama 4 Maverick by default) through its OpenAI-compatible chat completions endpoint, called with plain `fetch` (`src/lib/ai/llama.ts`, no SDK). Responses use JSON-schema structured output and are validated again on our side; network errors, 429s and 5xx responses are retried with backoff. Long documents are split into batches of about 650 words. The batches run in parallel (three at a time), and results stream to the browser as each one finishes. If a response is truncated, the batch is split and retried.
 - **Database:** PostgreSQL through `pg`. Rate limits are stored in Postgres, so they hold across every instance.
 
 ## Security and privacy
@@ -170,7 +172,7 @@ Requirements: Node 20.9+ and PostgreSQL 14+.
 
 ```bash
 npm install
-cp .env.example .env.local      # fill in DATABASE_URL, OPENAI_API_KEY, ENCRYPTION_KEY
+cp .env.example .env.local      # fill in DATABASE_URL, LLAMA_API_KEY, ENCRYPTION_KEY
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"   # → ENCRYPTION_KEY
 npm run db:migrate              # reads DATABASE_URL from the environment
 npm run dev
@@ -181,14 +183,14 @@ To work without an API key, set `AI_PROVIDER=mock`. A deterministic local editor
 With Docker:
 
 ```bash
-export OPENAI_API_KEY=sk-... ENCRYPTION_KEY=$(openssl rand -base64 32)
+export LLAMA_API_KEY=... ENCRYPTION_KEY=$(openssl rand -base64 32)
 docker compose up --build
 ```
 
 ## Deploying to Vercel
 
 1. On vercel.com, choose **Add New → Project** and import this repository. Leave the build settings alone, because `vercel.json` already runs migrations before each build.
-2. Add `OPENAI_API_KEY` and `ENCRYPTION_KEY` (plus `EMAIL_FROM` and `RESEND_API_KEY` for password reset), then deploy.
+2. Add `LLAMA_API_KEY` and `ENCRYPTION_KEY` (plus `EMAIL_FROM` and `RESEND_API_KEY` for password reset), then deploy.
 3. Open **Storage**, add a **Neon** database and connect it to the project. Any variable prefix works: PanPen detects whichever `postgres://` variable Neon creates, and it uses the unpooled connection for migrations.
 4. Redeploy, or push a commit. That deploy creates the tables.
 
@@ -205,17 +207,16 @@ Notes:
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | — | PostgreSQL connection string (required) |
-| `OPENAI_API_KEY` | — | Server-side OpenAI key (required) |
+| `LLAMA_API_KEY` | — | Server-side Meta Llama API key (required) |
 | `ENCRYPTION_KEY` | — | Required. Either 32 random bytes, base64-encoded, or a random passphrase of 32+ characters (e.g. from a password manager), which is stretched with scrypt. **Back it up:** losing or changing it makes stored documents unreadable; such items then show a "can't be opened" notice. |
-| `OPENAI_MODEL` | `gpt-5.5` | Rewriting model |
-| `OPENAI_REASONING_EFFORT` | `medium` | `none`…`xhigh`; applies to reasoning models |
-| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-large` | Model for the meaning-drift check |
-| `MEANING_CHECK` | `true` | Set to `false` to skip the embedding check |
+| `LLAMA_MODEL` | `Llama-4-Maverick-17B-128E-Instruct-FP8` | Rewriting model. `Llama-4-Scout-17B-16E-Instruct-FP8` is faster and cheaper; `Llama-3.3-70B-Instruct` is an alternative |
+| `LLAMA_MAX_OUTPUT_TOKENS` | `4096` | Output tokens per batch; truncated batches are split and retried |
+| `LLAMA_BASE_URL` | `https://api.llama.com/compat/v1` | OpenAI-compatible Llama API endpoint |
+| `MEANING_CHECK` | `true` | Embedding check; only has an effect with a provider that offers embeddings (the dev mock) |
 | `MAX_WORDS_PER_REQUEST` | `8000` | Words to rewrite per run |
 | `DAILY_WORD_LIMIT` | `50000` | Words per user per rolling 24 hours |
 | `REWRITES_PER_MINUTE` | `8` | Rewrite requests per user per minute |
 | `ALLOW_SIGNUPS` | `true` | Close public registration |
-| `OPENAI_IMAGE_MODEL` | `gpt-image-2` | Image Humanizer model |
 | `IMAGE_DAILY_LIMIT` | `10` | Images per user per rolling 24 hours |
 | `IMAGES_PER_MINUTE` | `3` | Image requests per user per minute |
 | `GPTZERO_API_KEY` | — | Optional text-detection model for the AI Content Detector |
