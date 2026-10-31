@@ -16,8 +16,9 @@ const LINKS = [
 ];
 const SETTINGS = { href: "/app/settings", label: "Settings", icon: Settings };
 
-export function AppNav({ name, used, limit }: { name: string; used: number; limit: number }) {
+export function AppNav({ name, used, limit, showImages = true }: { name: string; used: number; limit: number; showImages?: boolean }) {
   const pathname = usePathname();
+  const links = showImages ? LINKS : LINKS.filter((l) => l.href !== "/app/images");
   const router = useRouter();
   const pct = Math.min(100, Math.round((used / limit) * 100));
 
@@ -36,7 +37,7 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <Logo href="/app" />
           <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main">
-            {[...LINKS, SETTINGS].map(({ href, label, icon: Icon }) => (
+            {[...links, SETTINGS].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
@@ -90,7 +91,7 @@ export function AppNav({ name, used, limit }: { name: string; used: number; limi
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
       >
-        {LINKS.map(({ href, label, icon: Icon }) => (
+        {links.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imageEditingAvailable } from "@/lib/images/provider";
 import {
   ArrowRight,
   BookOpen,
@@ -181,7 +182,7 @@ export default async function Home() {
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
             <h2 className="max-w-2xl font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Editing that respects scholarship, culture and you.</h2>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map(({ icon: Icon, title, body }) => (
+              {FEATURES.filter((f) => f.title !== "Image Humanizer" || imageEditingAvailable()).map(({ icon: Icon, title, body }) => (
                 <div key={title} className="rounded-2xl border border-line bg-surface p-6">
                   <div className="mb-4 inline-flex size-10 items-center justify-center rounded-xl bg-forest-soft text-forest">
                     <Icon className="size-5" />

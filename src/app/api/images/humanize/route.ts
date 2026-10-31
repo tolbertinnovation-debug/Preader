@@ -1,10 +1,9 @@
 import { requireUser } from "@/lib/auth/session";
-import { sha256 } from "@/lib/crypto";
 import { env } from "@/lib/env";
 import { HttpError, assertSameOrigin } from "@/lib/http";
 import { IMAGE_FOCUS, IMAGE_LIMITS, IMAGE_SUBJECTS, type ImageFocus, type ImageStrength, type ImageSubject } from "@/lib/images/options";
 import { buildImagePrompt } from "@/lib/images/prompt";
-import { humanizeImage } from "@/lib/images/provider";
+import { humanizeImage, IMAGE_UNAVAILABLE_MESSAGE, imageEditingAvailable } from "@/lib/images/provider";
 import { sniffImage } from "@/lib/images/validate";
 import { imagesUsedToday, rateLimit, recordUsage, refundUsage } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
@@ -25,6 +24,7 @@ function intField(form: FormData, name: string, min: number, max: number): numbe
 export const POST = route(async (req) => {
   assertSameOrigin(req);
   const user = await requireUser();
+  if (!imageEditingAvailable()) throw new HttpError(503, "image_unavailable", IMAGE_UNAVAILABLE_MESSAGE);
   if (Number(req.headers.get("content-length") ?? 0) > IMAGE_LIMITS.maxUploadBytes + 64_000) {
     throw new HttpError(413, "too_large", "That image is too large. Please try a smaller one.");
   }
@@ -71,7 +71,6 @@ export const POST = route(async (req) => {
       width,
       height,
       prompt: buildImagePrompt({ subject, strength, focus }),
-      safetyId: sha256(`preader:${user.id}`).slice(0, 32),
       signal: abort.signal,
     });
     return new Response(new Uint8Array(out.image), {

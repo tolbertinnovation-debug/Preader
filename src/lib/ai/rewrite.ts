@@ -58,7 +58,6 @@ export type RewriteParams = {
   /** Expressions the writer asked PanPen to always keep. */
   voicePhrases?: string[];
   provider: Provider;
-  safetyId: string;
   signal: AbortSignal;
   meaningCheck: boolean;
   batchWords?: number;
@@ -94,7 +93,6 @@ async function callBatch(
         { title: params.title, ...context },
       ),
       signal: params.signal,
-      safetyId: params.safetyId,
     });
     return new Map(out.map((o) => [o.id, o]));
   } catch (err) {

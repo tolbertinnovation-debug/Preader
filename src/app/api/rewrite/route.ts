@@ -1,7 +1,7 @@
 import { runRewrite } from "@/lib/ai/rewrite";
 import { getProvider } from "@/lib/ai/provider";
 import { requireUser } from "@/lib/auth/session";
-import { sha256, tryDecrypt } from "@/lib/crypto";
+import { tryDecrypt } from "@/lib/crypto";
 import { queryOne } from "@/lib/db";
 import { env } from "@/lib/env";
 import { HttpError, assertSameOrigin, parseJson } from "@/lib/http";
@@ -84,7 +84,6 @@ export const POST = route(async (req) => {
           voiceSample,
           voicePhrases,
           provider,
-          safetyId: sha256(`preader:${user.id}`).slice(0, 32),
           signal: abort.signal,
           meaningCheck: env.meaningCheck,
         })) {
