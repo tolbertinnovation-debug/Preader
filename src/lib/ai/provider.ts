@@ -54,6 +54,48 @@ export function parseOutput(text: string): ModelSegmentOutput[] {
     }));
 }
 
+/** Structured JSON call for editorial feedback (used by the Editor). */
+export async function requestStructured(
+  call: RewriteCall,
+  name: string,
+  schema: Record<string, unknown>,
+  client?: ClientOptions,
+): Promise<unknown> {
+  if (!(client?.apiKey ?? env.llamaApiKey)) {
+    throw new HttpError(503, "ai_unconfigured", "The writing service is not configured yet. Please contact the administrator.");
+  }
+  try {
+    const res = await chatCompletion(
+      {
+        model: env.model,
+        messages: [
+          { role: "system", content: call.instructions },
+          { role: "user", content: call.input },
+        ],
+        max_completion_tokens: env.maxOutputTokens,
+        temperature: 0.3,
+        response_format: { type: "json_schema", json_schema: { name, schema } },
+      },
+      call.signal,
+      client,
+    );
+    const choice = res.choices?.[0];
+    if (choice?.finish_reason === "length") {
+      throw new HttpError(502, "editor_incomplete", "The editor could not finish its feedback. Try a shorter passage.");
+    }
+    if (choice?.message?.refusal || choice?.finish_reason === "content_filter") {
+      throw new HttpError(422, "ai_refused", "The writing service declined to edit this passage.");
+    }
+    try {
+      return extractJson(choice?.message?.content ?? "");
+    } catch {
+      throw new HttpError(502, "ai_bad_output", "The editor returned unreadable feedback. Please try again.");
+    }
+  } catch (err) {
+    mapError(err);
+  }
+}
+
 export class LlamaProvider implements Provider {
   model: string;
 

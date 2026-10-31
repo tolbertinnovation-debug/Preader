@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { chatCompletion, extractJson, LlamaApiError, type ClientOptions } from "@/lib/ai/llama";
-import { LlamaProvider, parseOutput } from "@/lib/ai/provider";
+import { LlamaProvider, parseOutput, requestStructured } from "@/lib/ai/provider";
 import { IncompleteError } from "@/lib/ai/types";
 import { HttpError } from "@/lib/http";
 
@@ -118,5 +118,23 @@ describe("LlamaProvider", () => {
 
   it("returns no embeddings (the Llama API has none)", async () => {
     expect(await new LlamaProvider(opts(fakeFetch([]).impl)).embed()).toBeNull();
+  });
+});
+
+describe("requestStructured (Editor feedback)", () => {
+  const call = { instructions: "Assess.", input: "{}", signal: new AbortController().signal };
+  const schema = { type: "object", properties: { score: { type: "number" } }, required: ["score"] };
+
+  it("sends the editor's schema and returns the parsed JSON", async () => {
+    const f = fakeFetch([ok(completion('```json\n{"score": 7}\n```'))]);
+    expect(await requestStructured(call, "assessment", schema, opts(f.impl))).toEqual({ score: 7 });
+    const body = JSON.parse(String(f.calls[0]!.init.body));
+    expect(body.response_format.json_schema).toEqual({ name: "assessment", schema });
+  });
+
+  it("reports a truncated reply as an incomplete editor response", async () => {
+    const f = fakeFetch([ok(completion('{"score":', "length"))]);
+    const err = await requestStructured(call, "assessment", schema, opts(f.impl)).catch((e) => e);
+    expect((err as HttpError).code).toBe("editor_incomplete");
   });
 });

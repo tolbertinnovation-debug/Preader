@@ -90,16 +90,16 @@ export type RewriteOptions = {
 };
 
 export const DEFAULT_OPTIONS: RewriteOptions = {
-  mode: "academic",
-  variety: "international",
+  mode: "natural",
+  variety: "liberian",
   tone: "neutral",
-  formality: 4,
-  readability: "advanced",
-  strength: 2,
+  formality: 2,
+  readability: "general",
+  strength: 4,
   preserveVoice: true,
-  allowIdioms: false,
+  allowIdioms: true,
   maskPersonal: false,
-  useVoiceSample: false,
+  useVoiceSample: true,
   privateMode: false,
   glossary: [],
 };
